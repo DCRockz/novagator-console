@@ -352,6 +352,17 @@
     }
   });
   document.querySelector(".console").addEventListener("mousedown", () => setTimeout(()=>focusEnd(input), 0));
+  // Global Enter fallback: runs even if input isn't focused
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      const txt = input.textContent.trim();
+      if (txt) {
+        input.textContent = '';
+        runCommand(txt);
+      }
+    }
+  });
 
   // Boot
   sys("INIT OK — Novagator Console " + NV_DEFAULTS.version);
