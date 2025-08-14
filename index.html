@@ -357,7 +357,11 @@
   sys("INIT OK — Novagator Console " + NV_DEFAULTS.version);
   sys("Welcome! Type 'help' to see commands. Chain with ';'.");
   focusEnd(input);
+
+  // Auto-show help once on load
+  setTimeout(() => runCommand('help'), 0);
 })();
+  
 </script>
 </body>
 </html>
