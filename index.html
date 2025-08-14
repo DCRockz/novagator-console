@@ -1,146 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Novagator Developer Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='100%25' height='100%25' rx='12' ry='12' fill='%230b0f19'/%3E%3Cpath d='M20 44l8-20 8 14 8-20 8 26' stroke='%23b3e5ff' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='20' r='3' fill='%23b3e5ff'/%3E%3C/svg%3E">
+<meta name="color-scheme" content="light dark" />
 <style>
-  body { margin:0; font-family: monospace; background:#0b0f19; color:#ccc; }
-  .console { padding:10px; height:100vh; display:flex; flex-direction:column; }
-  .header { display:flex; justify-content:space-between; font-weight:bold; color:#fff; }
-  .line { white-space:pre-wrap; }
-  .ts { color:#888; margin-right:4px; }
-  .tag { margin-right:4px; font-weight:bold; }
-  .OUT { color:#0f0; }
-  .SYS { color:#0af; }
-  .ERR { color:#f44; }
-  .fade { opacity:0.85; }
-  #screen { flex:1; overflow:auto; padding:5px; }
-  #input { outline:none; display:inline-block; min-width:5px; }
-  .prompt { color:#0af; }
+  :root{
+    --bg:#0b0f19; --panel:#101623; --text:#e7eefb; --muted:#94a3b8;
+    --accent:#5ee1ff; --accent-2:#7c4dff; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root[data-theme="light"]{ --bg:#f7fafc; --panel:#ffffff; --text:#0b1220; --muted:#475569; --accent:#0066ff; --accent-2:#7c4dff; }
+  }
+  * { box-sizing:border-box }
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    display:flex; align-items:stretch; justify-content:center;
+  }
+  .wrap{width:min(1200px,100%); padding:16px}
+  .console{
+    background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 90%, transparent) 0%, var(--panel) 100%);
+    border:1px solid color-mix(in oklab, var(--panel), #ffffff 8%);
+    border-radius:16px; padding:14px 14px 8px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    min-height:70vh; display:flex; flex-direction:column; gap:10px
+  }
+  .header{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .title{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
+  .badge{font:600 12px var(--mono); color:var(--accent); border:1px solid color-mix(in oklab,var(--accent),#000 60%); padding:2px 8px; border-radius:999px}
+  .screen{flex:1; overflow:auto; padding:8px 6px; scrollbar-gutter: stable both-edges}
+  .line{font-family:var(--mono); white-space:pre-wrap; word-break:break-word; line-height:1.45}
+  .line.fade{color:var(--muted)}
+  .line .ts{color:var(--muted); margin-right:8px}
+  .line .tag{padding:1px 6px; border-radius:6px; margin-right:6px; font-weight:700}
+  .tag.OUT{background:color-mix(in oklab, var(--accent) 30%, transparent); color:var(--accent)}
+  .tag.SYS{background:color-mix(in oklab, var(--accent-2) 30%, transparent); color:var(--accent-2)}
+  .tag.ERR{background:color-mix(in oklab, var(--err) 25%, transparent); color:var(--err)}
+  .prompt-row{display:flex; align-items:flex-start; gap:10px}
+  .prompt{font-family:var(--mono); color:var(--muted)}
+  .input{
+    flex:1; min-height:24px; outline:none; border:none; background:transparent; color:var(--text);
+    font-family:var(--mono); font-size:14px; caret-color: var(--accent);
+  }
+  .input[contenteditable="true"]:empty:before{content:attr(data-placeholder); color:var(--muted)}
+  .footer{display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font:12px var(--mono)}
+  .kbd{border:1px solid color-mix(in oklab, var(--muted), #000 40%); padding:1px 6px; border-radius:6px; margin:0 2px}
+  .toast{position:fixed; right:12px; bottom:12px; background:var(--panel); border:1px solid color-mix(in oklab,var(--panel),#fff 10%); color:var(--text); font:13px var(--mono); padding:8px 12px; border-radius:10px; opacity:0; transform: translateY(6px); transition:.3s}
+  .toast.show{opacity:1; transform: translateY(0)}
+  a, .link{color:var(--accent); text-decoration: none; border-bottom:1px dashed color-mix(in oklab,var(--accent),#000 65%)}
 </style>
 </head>
 <body>
-<div class="console">
-  <div class="header">
-    <span>🟢 Novagator Developer Console</span>
-    <span id="ver">v1.1.3</span>
-  </div>
-  <div id="screen"></div>
-  <div><span class="prompt">➜ </span><span id="input" contenteditable="true"></span></div>
-  <div style="font-size:12px;opacity:0.6;">
-    Tips: ↑/↓ history · Tab autocomplete · Ctrl+L clear · use ; to chain · <span id="themeIndicator">theme: auto</span>
-  </div>
+<div class="wrap">
+  <main class="console" role="region" aria-label="Developer console">
+    <div class="header">
+      <div class="title">
+        <span class="dot ok" title="status: ok"></span>
+        <span>Novagator Developer Console</span>
+      </div>
+      <div class="badge" id="ver">v1.2.0</div>
+    </div>
+
+    <section id="screen" class="screen" aria-live="polite"></section>
+
+    <div class="prompt-row">
+      <div class="prompt" aria-hidden="true">➜</div>
+      <div id="input" class="input" contenteditable="true" spellcheck="false" role="textbox" aria-label="Console input" data-placeholder="Type a command… (try 'help')"></div>
+    </div>
+
+    <div class="footer">
+      <div>
+        Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete · <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear · use <span class="kbd">;</span> to chain
+      </div>
+      <div id="themeIndicator">theme: auto</div>
+    </div>
+  </main>
 </div>
 
-<!-- Fixed JS -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <script>
 ;(() => {
   'use strict';
 
+  // DOM
   const $ = s => document.querySelector(s);
   const screen = $("#screen");
-  const input  = $("#input");
+  const input = $("#input");
+  const toastEl = $("#toast");
   const themeIndicator = $("#themeIndicator");
-  const ver = (document.getElementById('ver')?.textContent || 'v0.0.0').trim();
-
-  function line(msg, tag="SYS", cls=""){ 
-    const el = document.createElement("div");
-    el.className = `line ${cls}`;
-    const ts = new Date().toLocaleTimeString();
-    el.innerHTML = `<span class="ts">[${ts}]</span><span class="tag ${tag}">${tag}</span>${msg}`;
-    $("#screen").appendChild(el);
-    $("#screen").scrollTop = $("#screen").scrollHeight;
-  }
-  const ok  = m => line(escapeHtml(m), "OUT");
-  const sys = m => line(escapeHtml(m), "SYS", "fade");
-  const err = m => line(escapeHtml(m), "ERR");
-
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-  const NV_DEFAULTS = Object.freeze({
-    version: "1.1.3",
-    apiBase: "https://example.com/api",
-    statusUrl: "https://example.com/health"
-  });
-
-  const state = {
-    history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
-    histIdx: null,
-    theme:  localStorage.getItem("nv.theme") || "auto",
-    aliases: JSON.parse(localStorage.getItem("nv.aliases") || "{}"),
-    cfg:     JSON.parse(localStorage.getItem("nv.config")  || JSON.stringify(NV_DEFAULTS)),
-    commands: {}
-  };
-
-  (function applyTheme(mode){
-    const root = document.documentElement;
-    if(mode === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", mode);
-    themeIndicator.textContent = `theme: ${mode}`;
-    localStorage.setItem("nv.theme", mode);
-  })(state.theme);
-
-  const saveHistory = () => localStorage.setItem("nv.history", JSON.stringify(state.history.slice(-500)));
-  const saveAliases = () => localStorage.setItem("nv.aliases", JSON.stringify(state.aliases));
-  const saveConfig  = () => localStorage.setItem("nv.config",  JSON.stringify(state.cfg));
-
-  function calcExpr(expr){
-    if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
-    const sanitized = expr.replace(/\^/g,"**").replace(/,/g,"");
-    const fn = new Function(`return (${sanitized})`);
-    const v = fn();
-    if(!Number.isFinite(v)) throw new Error("Invalid expression");
-    return v;
-  }
-
-  const commands = {
-    help(){ ok(`Commands: help, clear, echo, date, time, theme <m>, version, about, uuid, calc, store, ascii, open, net ping, alias, unalias, nv version, nv status, config get/set`); },
-    clear(){ screen.innerHTML = ""; },
-    echo(...a){ ok(a.join(" ")); },
-    date(){ ok(new Date().toLocaleDateString()); },
-    time(){ ok(new Date().toLocaleTimeString()); },
-    theme(m){ m=m?.toLowerCase(); if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>"); localStorage.setItem("nv.theme", m); themeIndicator.textContent=`theme: ${m}`; ok(`Theme set to ${m}`); },
-    version(){ ok(ver); },
-    about(){ ok("Novagator Developer Console — HTML/JS tool for dev & QA."); },
-    uuid(){ const u = crypto.randomUUID(); ok(u); },
-    calc(...a){ try{ ok(String(calcExpr(a.join(" ").trim()))); }catch(ex){ err("Calc error: " + ex.message); } },
-    alias(def){ if(!def){ return ok(Object.keys(state.aliases).join(", ")||"(no aliases)"); } const m=String(def).split("="); state.aliases[m[0]]=m[1]; saveAliases(); ok(`Alias set: ${m[0]} = ${m[1]}`); },
-    unalias(name){ delete state.aliases[name]; saveAliases(); ok(`Alias removed: ${name}`); },
-    nv(sub){ if(sub==="version") ok(`Novagator ${state.cfg.version}`); else if(sub==="status") commands["nv.status"](); else err("Usage: nv version|status"); },
-    async "nv.status"(){ const u=state.cfg.statusUrl; try{ const r=await fetch(u); ok(`Status ${r.status}`); }catch{ err("Error fetching status"); } },
-    config(sub,k,...rest){ if(sub==="get") ok(JSON.stringify(state.cfg,null,2)); else if(sub==="set"){ state.cfg[k]=rest.join(" "); saveConfig(); ok(`config[${k}] set`); } else err("Usage: config get|set"); }
-  };
-  state.commands = commands;
-
-  function runCommand(raw){
-    if(!raw?.trim()) return;
-    if(state.history[state.history.length-1] !== raw){ state.history.push(raw); saveHistory(); }
-    const [cmd, ...args] = raw.split(/\s+/);
-    const fn = state.commands[cmd?.toLowerCase()];
-    if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); return; }
-    try{ fn.apply(null, args); }catch(e){ err(e?.message || String(e)); }
-  }
-
-  function attachInputHandlers(){
-    input.addEventListener("keydown", (e) => {
-      if(e.key === "Enter"){
-        e.preventDefault();
-        const txt = input.textContent;
-        input.textContent = "";
-        runCommand(txt);
-      }
-    });
-  }
-
-  try{
-    sys("INIT OK — Novagator Console " + NV_DEFAULTS.version);
-    attachInputHandlers();
-    input.focus();
-  }catch(e){
-    err("Boot error: " + (e?.message || e));
-  }
-
-})();
-</script>
-</body>
-</html>
+  const ver = (document.getElement
