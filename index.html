@@ -1,27 +1,3 @@
-<script>
-;(() => {
-  'use strict';
-
-  // Convenience selector
-  const $ = (s) => document.querySelector(s);
-
-  // DOM refs
-  const screen = $("#screen");
-  const input = $("#input");
-  const toastEl = $("#toast");
-  const themeIndicator = $("#themeIndicator");
-  const ver = (document.getElementById('ver')?.textContent || 'v0.0.0').trim();
-
-  // Expose version for quick sanity checks in DevTools (optional)
-  window._nv_ver = ver;
-
-  // ---- Editable Novagator defaults ----
-  // If you have real endpoints, set them here (or via `config set ...` in the console).
-  const NV_DEFAULTS = Object.freeze({
-    version: "1.1.1",
-    apiBase: "https://example.com/api",
-    statusUrl: "https://example.com/health"
-  });
 <!doctype html>
 <html lang="en">
 <head>
