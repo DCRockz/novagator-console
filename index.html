@@ -367,7 +367,17 @@
   // Boot
   sys("INIT OK — Novagator Console " + NV_DEFAULTS.version);
   sys("Welcome! Type 'help' to see commands. Chain with ';'.");
-  focusEnd(input);
+  focusEnd(input);  // Auto-run startup script if present
+  try {
+    // Value may be stored as JSON string or raw string
+    const raw = localStorage.getItem("nv.startup");
+    const startup = raw ? (JSON.parse(raw).toString ? JSON.parse(raw) : raw) : null;
+    if (startup && typeof startup === "string" && startup.trim()) {
+      sys("Running startup script…");
+      runCommand(startup);
+    }
+  } catch {}
+
 
   // Auto-show help once on load
   setTimeout(() => runCommand('help'), 0);
