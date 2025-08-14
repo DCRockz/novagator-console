@@ -55,7 +55,7 @@
         <span class="dot ok" title="status: ok"></span>
         <span>Novagator Developer Console</span>
       </div>
-      <div class="badge" id="ver">v1.1.1</div>
+      <div class="badge" id="ver">v1.1.2</div>
     </div>
 
     <section id="screen" class="screen" aria-live="polite"></section>
@@ -75,23 +75,25 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
-(() => {
+;(() => {
+  'use strict';
+
   const $ = s => document.querySelector(s);
   const screen = $("#screen");
   const input = $("#input");
   const toastEl = $("#toast");
   const themeIndicator = $("#themeIndicator");
-  const ver = $("#ver")?.textContent?.trim() || "v0.0.0";
+  const ver = (document.getElementById('ver')?.textContent || 'v0.0.0').trim();
+
+  // Expose version for quick sanity checks
+  window._nv_ver = ver;
 
   // ---- Editable Novagator defaults ----
-  const NV_DEFAULTS = {
-    const NV_DEFAULTS = {
-  version: "1.1.1",
-  apiBase: "https://example.com/api",
-  statusUrl: "https://example.com/health"
-};
-
-  };
+  const NV_DEFAULTS = Object.freeze({
+    version: "1.1.2",
+    apiBase: "https://example.com/api",
+    statusUrl: "https://example.com/health"
+  });
 
   const state = {
     history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
@@ -151,7 +153,6 @@
 
   // ---- COMMANDS ----
   const commands = {
-    // core
     help(){
       ok(`Available commands:
   help                           Show this help
@@ -202,183 +203,4 @@
     },
     ascii(...text){
       const s = (text.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24);
-      const banner = s.split("").map(ch=>ch===" "?"   ":ch).join(" ");
-      ok(`+${"-".repeat(banner.length+2)}+\n| ${banner} |\n+${"-".repeat(banner.length+2)}+`);
-    },
-    open(url){ if(!url) return err("Usage: open <url>"); try{ window.open(url, "_blank","noopener"); ok("Opening: " + url); } catch(e){ err("Failed to open URL"); } },
-    async net(sub, url){
-      if(sub!=="ping" || !url) return err("Usage: net ping <url>");
-      const t0 = performance.now();
-      try{
-        await fetch(url, { method:"HEAD", mode:"no-cors" });
-        const t1 = performance.now();
-        ok(`Pinged ${url} in ~${Math.round(t1-t0)}ms (HEAD, no-cors)`);
-      }catch(e){ err("Network error (likely CORS) but request attempted."); }
-    },
-    // aliases
-    alias(def){
-      if(!def){ // list
-        const keys = Object.keys(state.aliases);
-        if(!keys.length) return ok("(no aliases)");
-        return ok(keys.map(k=>`${k} = ${state.aliases[k]}`).join("\n"));
-      }
-      const m = String(def).split("=");
-      if(m.length < 2) return err("Usage: alias <name>=<command...>");
-      const name = m.shift().trim();
-      const value = m.join("=").trim();
-      if(!name || !value) return err("Usage: alias <name>=<command...>");
-      state.aliases[name] = value;
-      saveAliases(); ok(`Alias set: ${name} = ${value}`);
-    },
-    unalias(name){
-      if(!name) return err("Usage: unalias <name>");
-      if(!(name in state.aliases)) return err("No such alias: " + name);
-      delete state.aliases[name]; saveAliases(); ok(`Alias removed: ${name}`);
-    },
-    // novagator
-    nv(sub){
-      switch((sub||"").toLowerCase()){
-        case "version": ok(`Novagator ${state.cfg.version || NV_DEFAULTS.version}`); break;
-        case "status": return commands["nv.status"]();
-        default: err("Usage: nv version | nv status");
-      }
-    },
-    async "nv.status"(){
-      const url = state.cfg.statusUrl || NV_DEFAULTS.statusUrl;
-      if(!url || url.includes("example.com")) return err("Set a real status URL first: config set statusUrl https://your.site/health");
-      const t0 = performance.now();
-      try{
-        const res = await fetch(url, { method:"GET", mode:"cors" });
-        const t1 = performance.now();
-        ok(`Status ${res.status} ${res.ok ? "OK" : "NOT OK"} in ~${Math.round(t1-t0)}ms`);
-      }catch(e){
-        err("Could not reach status URL (CORS or network). Try net ping " + url);
-      }
-    },
-    config(sub, key, ...rest){
-      switch((sub||"").toLowerCase()){
-        case "get":
-          ok(JSON.stringify(state.cfg, null, 2)); break;
-        case "set":
-          if(!key) return err("Usage: config set <key> <value>");
-          const v = rest.join(" ").trim();
-          if(!v) return err("Provide a value");
-          state.cfg[key] = v;
-          saveConfig();
-          ok(`config[${key}] = ${v}`);
-          break;
-        default:
-          err("Usage: config get | config set <key> <value>");
-      }
-    }
-  };
-  state.commands = commands;
-
-  // WELCOME
-  sys("Welcome to Novagator. Type 'help' to get started. Chain with ';' (e.g., theme dark ; ascii NOVAGATOR).");
-  sys("Your command history persists locally. Use 'clear' to wipe the screen.");
-
-  // ---- COMMAND RUNNER with alias + chaining ----
-  function expandAliases(line){
-    const [first, ...rest] = line.trim().split(/\s+/);
-    if(first in state.aliases){
-      return state.aliases[first] + (rest.length ? " " + rest.join(" ") : "");
-    }
-    return line;
-  }
-
-  function splitCommands(raw){
-    // split by ; but ignore inside quotes
-    const parts = [];
-    let cur = "", inQuote = null;
-    for(const ch of raw){
-      if((ch === "'" || ch === '"')){
-        if(inQuote === ch) inQuote = null;
-        else if(!inQuote) inQuote = ch;
-        cur += ch;
-      } else if(ch === ";" && !inQuote){
-        parts.push(cur.trim()); cur = "";
-      } else {
-        cur += ch;
-      }
-    }
-    if(cur.trim()) parts.push(cur.trim());
-    return parts;
-  }
-
-  function runCommand(raw){
-    if(!raw || !raw.trim()) return;
-    // record history once per full line
-    if(state.history[state.history.length-1] !== raw){ state.history.push(raw); saveHistory(); }
-    state.histIdx = null;
-
-    const commandsToRun = splitCommands(raw).map(expandAliases);
-    for(const line of commandsToRun){
-      if(!line) continue;
-      print(escape("➜ " + line), "SYS");
-      const [cmd, ...args] = line.split(/\s+/);
-      const fn = state.commands[cmd?.toLowerCase()];
-      if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); continue; }
-      try{
-        const res = fn.apply(null, args);
-        if(res instanceof Promise){ res.catch(e => err("Async error: " + (e?.message || e))); }
-      }catch(e){ err(e?.message || String(e)); }
-    }
-  }
-
-  function complete(current){
-    const keys = Object.keys(state.commands).concat(Object.keys(state.aliases));
-    const matches = keys.filter(k => k.startsWith(current.toLowerCase()));
-    if(matches.length === 1) return matches[0] + " ";
-    if(matches.length > 1) sys("Suggestions: " + matches.join(", "));
-    return null;
-  }
-
-  function focusEnd(el){
-    el.focus();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
-  focusEnd(input);
-
-  input.addEventListener("keydown", (e) => {
-    if(e.key === "Enter"){
-      e.preventDefault();
-      const txt = input.textContent;
-      input.textContent = "";
-      runCommand(txt);
-    } else if(e.key === "ArrowUp"){
-      e.preventDefault();
-      if(state.histIdx === null) state.histIdx = state.history.length;
-      if(state.histIdx > 0){ state.histIdx--; input.textContent = state.history[state.histIdx] || ""; focusEnd(input); }
-    } else if(e.key === "ArrowDown"){
-      e.preventDefault();
-      if(state.histIdx !== null){
-        state.histIdx++;
-        if(state.histIdx >= state.history.length){ state.histIdx = null; input.textContent = ""; }
-        else { input.textContent = state.history[state.histIdx] || ""; }
-        focusEnd(input);
-      }
-    } else if(e.key === "Tab"){
-      e.preventDefault();
-      const cur = input.textContent.trim();
-      if(!cur) return;
-      const comp = complete(cur);
-      if(comp){ input.textContent = comp; focusEnd(input); }
-    } else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "l"){
-      e.preventDefault();
-      commands.clear(); sys("Screen cleared (Ctrl/⌘+L).");
-    }
-  });
-
-  document.querySelector(".console").addEventListener("mousedown", () => setTimeout(()=>focusEnd(input), 0));
-
-  print("Console ready.", "SYS", "fade");
-})();
-</script>
-</body>
-</html>
+      const banner = s.split("").map(ch=>ch===" "?"   ":ch).join
