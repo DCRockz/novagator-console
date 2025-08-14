@@ -8,59 +8,43 @@
   <meta name="color-scheme" content="light dark">
   <style>
     :root{
-      --bg: #0b0f19;
-      --panel: #101623;
-      --text: #e7eefb;
-      --muted:#94a3b8;
-      --accent:#5ee1ff;
-      --accent-2:#7c4dff;
-      --ok:#22c55e;
-      --warn:#f59e0b;
-      --err:#ef4444;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --bg:#0b0f19; --panel:#101623; --text:#e7eefb; --muted:#94a3b8;
+      --accent:#5ee1ff; --accent-2:#7c4dff; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
     }
     @media (prefers-color-scheme: light){
-      :root[data-theme="light"]{
-        --bg:#f7fafc; --panel:#ffffff; --text:#0b1220; --muted:#475569; --accent:#0066ff; --accent-2:#7c4dff;
-      }
+      :root[data-theme="light"]{ --bg:#f7fafc; --panel:#ffffff; --text:#0b1220; --muted:#475569; --accent:#0066ff; --accent-2:#7c4dff; }
     }
     html,body{height:100%}
-    body{
-      margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      display:flex; align-items:stretch; justify-content:center;
-    }
-    .wrap{width:min(1200px,100%); padding:16px}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;justify-content:center}
+    .wrap{width:min(1200px,100%);padding:16px}
     .console{
-      background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 90%, transparent) 0%, var(--panel) 100%);
-      border:1px solid color-mix(in oklab, var(--panel), #ffffff 8%);
-      border-radius:16px; padding:14px 14px 8px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      min-height:70vh; display:flex; flex-direction:column; gap:10px
+      background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 90%,transparent) 0%,var(--panel) 100%);
+      border:1px solid color-mix(in oklab,var(--panel),#ffffff 8%); border-radius:16px; padding:14px 14px 8px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35); min-height:70vh; display:flex; flex-direction:column; gap:10px
     }
-    .header{display:flex; align-items:center; justify-content:space-between; gap:10px}
-    .title{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .title{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
     .dot{width:10px;height:10px;border-radius:50%}
     .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
-    .badge{font:600 12px var(--mono); color:var(--accent); border:1px solid color-mix(in oklab,var(--accent),#000 60%); padding:2px 8px; border-radius:999px}
-    .screen{flex:1; overflow:auto; padding:8px 6px; scrollbar-gutter: stable both-edges}
-    .line{font-family:var(--mono); white-space:pre-wrap; word-break:break-word; line-height:1.45}
+    .badge{font:600 12px var(--mono);color:var(--accent);border:1px solid color-mix(in oklab,var(--accent),#000 60%);padding:2px 8px;border-radius:999px}
+    .screen{flex:1;overflow:auto;padding:8px 6px;scrollbar-gutter:stable both-edges}
+    .line{font-family:var(--mono);white-space:pre-wrap;word-break:break-word;line-height:1.45}
     .line.fade{color:var(--muted)}
-    .line .ts{color:var(--muted); margin-right:8px}
-    .line .tag{padding:1px 6px; border-radius:6px; margin-right:6px; font-weight:700}
-    .tag.OUT{background:color-mix(in oklab, var(--accent) 30%, transparent); color:var(--accent)}
-    .tag.SYS{background:color-mix(in oklab, var(--accent-2) 30%, transparent); color:var(--accent-2)}
-    .tag.ERR{background:color-mix(in oklab, var(--err) 25%, transparent); color:var(--err)}
-    .prompt-row{display:flex; align-items:flex-start; gap:10px}
-    .prompt{font-family:var(--mono); color:var(--muted)}
-    .input{
-      flex:1; min-height:24px; outline:none; border:none; background:transparent; color:var(--text);
-      font-family:var(--mono); font-size:14px; caret-color: var(--accent);
-    }
-    .input[contenteditable="true"]:empty:before{content:attr(data-placeholder); color:var(--muted)}
-    .footer{display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font:12px var(--mono)}
-    .kbd{border:1px solid color-mix(in oklab, var(--muted), #000 40%); padding:1px 6px; border-radius:6px; margin:0 2px}
-    .toast{position:fixed; right:12px; bottom:12px; background:var(--panel); border:1px solid color-mix(in oklab,var(--panel),#fff 10%); color:var(--text); font:13px var(--mono); padding:8px 12px; border-radius:10px; opacity:0; transform: translateY(6px); transition:.3s}
-    .toast.show{opacity:1; transform: translateY(0)}
-    a, .link{color:var(--accent); text-decoration: none; border-bottom:1px dashed color-mix(in oklab,var(--accent),#000 65%)}
+    .line .ts{color:var(--muted);margin-right:8px}
+    .line .tag{padding:1px 6px;border-radius:6px;margin-right:6px;font-weight:700}
+    .tag.OUT{background:color-mix(in oklab,var(--accent) 30%,transparent);color:var(--accent)}
+    .tag.SYS{background:color-mix(in oklab,var(--accent-2) 30%,transparent);color:var(--accent-2)}
+    .tag.ERR{background:color-mix(in oklab,var(--err) 25%,transparent);color:var(--err)}
+    .prompt-row{display:flex;align-items:flex-start;gap:10px}
+    .prompt{font-family:var(--mono);color:var(--muted)}
+    .input{flex:1;min-height:24px;outline:none;border:none;background:transparent;color:var(--text);font-family:var(--mono);font-size:14px;caret-color:var(--accent)}
+    .input[contenteditable="true"]:empty:before{content:attr(data-placeholder);color:var(--muted)}
+    .footer{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font:12px var(--mono)}
+    .kbd{border:1px solid color-mix(in oklab,var(--muted),#000 40%);padding:1px 6px;border-radius:6px;margin:0 2px}
+    .toast{position:fixed;right:12px;bottom:12px;background:var(--panel);border:1px solid color-mix(in oklab,var(--panel),#fff 10%);color:var(--text);font:13px var(--mono);padding:8px 12px;border-radius:10px;opacity:0;transform:translateY(6px);transition:.3s}
+    .toast.show{opacity:1;transform:translateY(0)}
+    a,.link{color:var(--accent);text-decoration:none;border-bottom:1px dashed color-mix(in oklab,var(--accent),#000 65%)}
   </style>
 </head>
 <body>
@@ -71,7 +55,7 @@
         <span class="dot ok" title="status: ok"></span>
         <span>Novagator Developer Console</span>
       </div>
-      <div class="badge" id="ver">v1.0.0</div>
+      <div class="badge" id="ver">v1.1.0</div>
     </div>
 
     <section id="screen" class="screen" aria-live="polite"></section>
@@ -82,9 +66,7 @@
     </div>
 
     <div class="footer">
-      <div>
-        Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete · <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear
-      </div>
+      <div>Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete · <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear · use <span class="kbd">;</span> to chain</div>
       <div id="themeIndicator">theme: auto</div>
     </div>
   </main>
@@ -101,13 +83,23 @@
   const themeIndicator = $("#themeIndicator");
   const ver = $("#ver")?.textContent?.trim() || "v0.0.0";
 
+  // ---- Editable Novagator defaults ----
+  const NV_DEFAULTS = {
+    version: "1.1.0",
+    apiBase: "https://example.com/api",   // <— set your real API base if you have one
+    statusUrl: "https://example.com/health" // <— set your real health endpoint
+  };
+
   const state = {
     history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
     histIdx: null,
     theme: localStorage.getItem("nv.theme") || "auto",
     commands: {},
+    aliases: JSON.parse(localStorage.getItem("nv.aliases") || "{}"),
+    cfg: JSON.parse(localStorage.getItem("nv.config") || JSON.stringify(NV_DEFAULTS)),
   };
 
+  // THEME
   function applyTheme(mode){
     const root = document.documentElement;
     if(mode === "auto"){ root.removeAttribute("data-theme"); }
@@ -118,6 +110,7 @@
   }
   applyTheme(state.theme);
 
+  // UTIL
   const now = () => new Date().toLocaleTimeString();
   const escape = s => s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const print = (msg, tag="OUT", cls="") => {
@@ -130,9 +123,12 @@
   const ok = msg => print(escape(msg), "OUT");
   const sys = msg => print(escape(msg), "SYS", "fade");
   const err = msg => print(escape(msg), "ERR");
-  const toast = msg => { toastEl.textContent = msg; toastEl.classList.add("show"); setTimeout(() => toastEl.classList.remove("show"), 2200); };
+  const toast = msg => { toastEl.textContent = msg; toastEl.classList.add("show"); setTimeout(() => toastEl.classList.remove("show"), 2000); };
   const saveHistory = () => localStorage.setItem("nv.history", JSON.stringify(state.history.slice(-500)));
+  const saveAliases = () => localStorage.setItem("nv.aliases", JSON.stringify(state.aliases));
+  const saveConfig  = () => localStorage.setItem("nv.config", JSON.stringify(state.cfg));
 
+  // Safe tiny math
   function calcExpr(expr){
     if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
     const sanitized = expr.replace(/\^/g, "**").replace(/,/g,"");
@@ -142,6 +138,7 @@
     throw new Error("Invalid expression");
   }
 
+  // STORAGE helpers
   const store = {
     get:k => JSON.parse(localStorage.getItem(k)),
     set:(k,v)=> localStorage.setItem(k, JSON.stringify(v)),
@@ -149,20 +146,33 @@
     keys:() => Object.keys(localStorage)
   };
 
+  // ---- COMMANDS ----
   const commands = {
+    // core
     help(){
       ok(`Available commands:
-  help                      Show this help
-  clear                     Clear screen
-  echo <text>               Print text
-  date / time               Current date/time
-  theme <auto|light|dark>   Switch theme
-  version                   Console version
-  about                     About Novagator console
-  uuid                      Generate a UUID
-  calc <expr>               Evaluate math
-  store keys|get|set|del    Local storage ops
-  ascii <text>              Tiny ASCII banner
+  help                           Show this help
+  clear                          Clear screen
+  echo <text>                    Print text
+  date / time                    Current date/time
+  theme <auto|light|dark>        Switch theme
+  version                        Console version
+  about                          About Novagator console
+  uuid                           Generate a UUID
+  calc <expr>                    Evaluate math
+  store keys|get|set|del         Local storage ops
+  ascii <text>                   Tiny ASCII banner
+  open <url>                     Open URL in new tab
+  net ping <url>                 HEAD request (latency)
+  alias <name>=<command...>      Create alias (e.g., alias st=nv status)
+  alias                          List aliases
+  unalias <name>                 Remove alias
+
+  # Novagator
+  nv version                     Show Novagator version
+  nv status                      Ping configured status URL
+  config get                     Show current config
+  config set <key> <value>       Set config (apiBase, statusUrl, version)
 `);
     },
     clear(){ screen.innerHTML = ""; },
@@ -175,19 +185,9 @@
       applyTheme(m); ok(`Theme set to ${m}`);
     },
     version(){ ok(ver); },
-    about(){
-      ok("Novagator Developer Console — self-contained HTML tool for dev & QA.");
-      sys("History stored locally. Type 'help' to explore commands.");
-    },
-    uuid(){
-      const u = crypto.randomUUID();
-      ok(u); navigator.clipboard?.writeText(u).then(()=>toast("UUID copied"));
-    },
-    calc(...args){
-      const expr = args.join(" ").trim();
-      if(!expr) return err("Usage: calc <expression>");
-      try{ ok(String(calcExpr(expr))); }catch(e){ err("Calc error: " + e.message); }
-    },
+    about(){ ok("Novagator Developer Console — self-contained HTML tool for dev & QA."); sys("Use `help` to explore. Chain commands with `;`."); },
+    uuid(){ const u = crypto.randomUUID(); ok(u); navigator.clipboard?.writeText(u).then(()=>toast("UUID copied")); },
+    calc(...args){ const expr = args.join(" ").trim(); if(!expr) return err("Usage: calc <expression>"); try{ ok(String(calcExpr(expr))); }catch(e){ err("Calc error: " + e.message); } },
     store(sub, key, ...rest){
       switch((sub||"").toLowerCase()){
         case "keys": ok(store.keys().join(", ")); break;
@@ -201,28 +201,130 @@
       const s = (text.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24);
       const banner = s.split("").map(ch=>ch===" "?"   ":ch).join(" ");
       ok(`+${"-".repeat(banner.length+2)}+\n| ${banner} |\n+${"-".repeat(banner.length+2)}+`);
+    },
+    open(url){ if(!url) return err("Usage: open <url>"); try{ window.open(url, "_blank","noopener"); ok("Opening: " + url); } catch(e){ err("Failed to open URL"); } },
+    async net(sub, url){
+      if(sub!=="ping" || !url) return err("Usage: net ping <url>");
+      const t0 = performance.now();
+      try{
+        await fetch(url, { method:"HEAD", mode:"no-cors" });
+        const t1 = performance.now();
+        ok(`Pinged ${url} in ~${Math.round(t1-t0)}ms (HEAD, no-cors)`);
+      }catch(e){ err("Network error (likely CORS) but request attempted."); }
+    },
+    // aliases
+    alias(def){
+      if(!def){ // list
+        const keys = Object.keys(state.aliases);
+        if(!keys.length) return ok("(no aliases)");
+        return ok(keys.map(k=>`${k} = ${state.aliases[k]}`).join("\n"));
+      }
+      const m = String(def).split("=");
+      if(m.length < 2) return err("Usage: alias <name>=<command...>");
+      const name = m.shift().trim();
+      const value = m.join("=").trim();
+      if(!name || !value) return err("Usage: alias <name>=<command...>");
+      state.aliases[name] = value;
+      saveAliases(); ok(`Alias set: ${name} = ${value}`);
+    },
+    unalias(name){
+      if(!name) return err("Usage: unalias <name>");
+      if(!(name in state.aliases)) return err("No such alias: " + name);
+      delete state.aliases[name]; saveAliases(); ok(`Alias removed: ${name}`);
+    },
+    // novagator
+    nv(sub){
+      switch((sub||"").toLowerCase()){
+        case "version": ok(`Novagator ${state.cfg.version || NV_DEFAULTS.version}`); break;
+        case "status": return commands["nv.status"]();
+        default: err("Usage: nv version | nv status");
+      }
+    },
+    async "nv.status"(){
+      const url = state.cfg.statusUrl || NV_DEFAULTS.statusUrl;
+      if(!url || url.includes("example.com")) return err("Set a real status URL first: config set statusUrl https://your.site/health");
+      const t0 = performance.now();
+      try{
+        const res = await fetch(url, { method:"GET", mode:"cors" });
+        const t1 = performance.now();
+        ok(`Status ${res.status} ${res.ok ? "OK" : "NOT OK"} in ~${Math.round(t1-t0)}ms`);
+      }catch(e){
+        err("Could not reach status URL (CORS or network). Try net ping " + url);
+      }
+    },
+    config(sub, key, ...rest){
+      switch((sub||"").toLowerCase()){
+        case "get":
+          ok(JSON.stringify(state.cfg, null, 2)); break;
+        case "set":
+          if(!key) return err("Usage: config set <key> <value>");
+          const v = rest.join(" ").trim();
+          if(!v) return err("Provide a value");
+          state.cfg[key] = v;
+          saveConfig();
+          ok(`config[${key}] = ${v}`);
+          break;
+        default:
+          err("Usage: config get | config set <key> <value>");
+      }
     }
   };
   state.commands = commands;
 
-  sys("Welcome to Novagator. Type 'help' to get started.");
+  // WELCOME
+  sys("Welcome to Novagator. Type 'help' to get started. Chain with ';' (e.g., theme dark ; ascii NOVAGATOR).");
   sys("Your command history persists locally. Use 'clear' to wipe the screen.");
 
+  // ---- COMMAND RUNNER with alias + chaining ----
+  function expandAliases(line){
+    const [first, ...rest] = line.trim().split(/\s+/);
+    if(first in state.aliases){
+      return state.aliases[first] + (rest.length ? " " + rest.join(" ") : "");
+    }
+    return line;
+  }
+
+  function splitCommands(raw){
+    // split by ; but ignore inside quotes
+    const parts = [];
+    let cur = "", inQuote = null;
+    for(const ch of raw){
+      if((ch === "'" || ch === '"')){
+        if(inQuote === ch) inQuote = null;
+        else if(!inQuote) inQuote = ch;
+        cur += ch;
+      } else if(ch === ";" && !inQuote){
+        parts.push(cur.trim()); cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+    if(cur.trim()) parts.push(cur.trim());
+    return parts;
+  }
+
   function runCommand(raw){
-    const line = raw.trim();
-    if(!line) return;
-    if(state.history[state.history.length-1] !== line){ state.history.push(line); saveHistory(); }
+    if(!raw || !raw.trim()) return;
+    // record history once per full line
+    if(state.history[state.history.length-1] !== raw){ state.history.push(raw); saveHistory(); }
     state.histIdx = null;
-    print(escape("➜ " + line), "SYS");
-    const [cmd, ...args] = line.split(/\s+/);
-    const fn = state.commands[cmd?.toLowerCase()];
-    if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); return; }
-    try{ const res = fn.apply(null, args); if(res instanceof Promise){ res.catch(e => err("Async error: " + e.message)); } }
-    catch(e){ err(e?.message || String(e)); }
+
+    const commandsToRun = splitCommands(raw).map(expandAliases);
+    for(const line of commandsToRun){
+      if(!line) continue;
+      print(escape("➜ " + line), "SYS");
+      const [cmd, ...args] = line.split(/\s+/);
+      const fn = state.commands[cmd?.toLowerCase()];
+      if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); continue; }
+      try{
+        const res = fn.apply(null, args);
+        if(res instanceof Promise){ res.catch(e => err("Async error: " + (e?.message || e))); }
+      }catch(e){ err(e?.message || String(e)); }
+    }
   }
 
   function complete(current){
-    const keys = Object.keys(state.commands);
+    const keys = Object.keys(state.commands).concat(Object.keys(state.aliases));
     const matches = keys.filter(k => k.startsWith(current.toLowerCase()));
     if(matches.length === 1) return matches[0] + " ";
     if(matches.length > 1) sys("Suggestions: " + matches.join(", "));
