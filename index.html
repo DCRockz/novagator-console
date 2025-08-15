@@ -63,7 +63,7 @@
         <span class="dot ok" title="status: ok"></span>
         <span>Novagator Developer Console</span>
       </div>
-      <div class="badge" id="ver">v1.2.1</div>
+      <div class="badge" id="ver">v1.2.2</div>
     </div>
 
     <section id="screen" class="screen" aria-live="polite"></section>
@@ -99,7 +99,7 @@
 
   // Defaults
   const NV_DEFAULTS = Object.freeze({
-    version: "1.2.1",
+    version: "1.2.2",
     apiBase: "https://example.com/api",
     statusUrl: "https://example.com/health"
   });
@@ -181,6 +181,7 @@
   config get                     Show current config
   config set <key> <value>       Set config (apiBase, statusUrl, version)
 `);
+      sys("Demo: demo run | demo install | demo uninstall | demo show | demo reset");
     },
     clear(){ screen.innerHTML = ""; },
     echo(...args){ ok(args.join(" ")); },
@@ -198,11 +199,14 @@
     store(sub, key, ...rest){
       switch((sub||"").toLowerCase()){
         case "keys": ok(Object.keys(localStorage).join(", ")); break;
-        case "get": if(!key) return err("Usage: store get <key>"); ok(JSON.stringify(JSON.parse(localStorage.getItem(key)),null,2)); break;
+        case "get":
+          if(!key) return err("Usage: store get <key>");
+          { const raw = localStorage.getItem(key); ok(raw ? JSON.stringify(JSON.parse(raw), null, 2) : "(null)"); }
+          break;
         case "set":
           if(!key) return err("Usage: store set <key> <json|text>");
-          let val; const raw = rest.join(" ");
-          try{ val = JSON.parse(raw); }catch{ val = raw; }
+          let val; const rawIn = rest.join(" ");
+          try{ val = JSON.parse(rawIn); }catch{ val = rawIn; }
           localStorage.setItem(key, JSON.stringify(val)); ok("OK"); break;
         case "del": if(!key) return err("Usage: store del <key>"); localStorage.removeItem(key); ok("Deleted"); break;
         default: err("Usage: store keys|get|set|del …");
@@ -261,6 +265,43 @@
           if(!v) return err("Provide a value");
           state.cfg[key] = v; saveConfig(); ok(`config[${key}] = ${v}`); break;
         default: err("Usage: config get | config set <key> <value>");
+      }
+    },
+
+    // --- Demo Mode ---
+    demo(sub, ...args){
+      const action = (sub || "run").toLowerCase();
+      const needsStatus =
+        !state.cfg.statusUrl || String(state.cfg.statusUrl).includes("example.com");
+      const script = [
+        "clear",
+        "theme dark",
+        "ascii NOVAGATOR",
+        "alias st=nv status",
+        needsStatus ? "config set statusUrl https://httpbin.org/status/200" : null,
+        "nv status",
+        "help"
+      ].filter(Boolean).join(" ; ");
+
+      if(action === "run"){
+        runCommand(script);
+        ok("Demo Mode: sequence executed.");
+      } else if(action === "show"){
+        ok(script);
+      } else if(action === "install"){
+        localStorage.setItem("nv.startup", JSON.stringify(script));
+        ok("Demo Mode: startup script installed (runs on next load).");
+      } else if(action === "uninstall"){
+        localStorage.removeItem("nv.startup");
+        ok("Demo Mode: startup script removed.");
+      } else if(action === "reset"){
+        localStorage.removeItem("nv.history");
+        localStorage.removeItem("nv.aliases");
+        localStorage.removeItem("nv.config");
+        ok("Demo Mode: state cleared.");
+        runCommand(script);
+      } else {
+        err("Usage: demo [run|install|uninstall|show|reset]");
       }
     }
   };
@@ -367,9 +408,9 @@
   // Boot
   sys("INIT OK — Novagator Console " + NV_DEFAULTS.version);
   sys("Welcome! Type 'help' to see commands. Chain with ';'.");
-  focusEnd(input);  // Auto-run startup script if present
+  focusEnd(input);
+  // Auto-run startup script if present
   try {
-    // Value may be stored as JSON string or raw string
     const raw = localStorage.getItem("nv.startup");
     const startup = raw ? (JSON.parse(raw).toString ? JSON.parse(raw) : raw) : null;
     if (startup && typeof startup === "string" && startup.trim()) {
@@ -377,12 +418,9 @@
       runCommand(startup);
     }
   } catch {}
-
-
   // Auto-show help once on load
   setTimeout(() => runCommand('help'), 0);
 })();
-  
 </script>
 </body>
 </html>
