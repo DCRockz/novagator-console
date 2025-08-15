@@ -1,427 +1,99 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Novagator Developer Console</title>
-  <meta name="color-scheme" content="light dark"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Novagator Cockpit</title>
+<meta name="color-scheme" content="dark light"/>
 
-  <style>
-    :root{--bg:#0b0f19;--panel:#101623;--text:#e7eefb;--muted:#94a3b8;--accent:#5ee1ff;--accent-2:#7c4dff;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    @media (prefers-color-scheme:light){:root[data-theme="light"]{--bg:#f7fafc;--panel:#fff;--text:#0b1220;--muted:#475569;--accent:#0066ff;--accent-2:#7c4dff}}
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:
-        radial-gradient(1200px 600px at 20% -10%,#12203a 0%,transparent 60%),
-        radial-gradient(800px 600px at 100% 0%,#1b2b4a 0%,transparent 55%),
-        var(--bg);
-      color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      display:flex; justify-content:center
-    }
-    .wrap{width:min(1280px,100%);padding:16px;position:relative}
-    .wrap:before{content:"";position:absolute;inset:8px;border-radius:18px;border:1px solid color-mix(in oklab,var(--accent),#000 85%);box-shadow:0 0 0 1px color-mix(in oklab,var(--panel),#fff 8%) inset,0 20px 60px rgba(0,0,0,.35);pointer-events:none}
-    .wrap:after{content:"";position:absolute;inset:16px;background-image:linear-gradient(transparent 96%,color-mix(in oklab,var(--accent),#000 80%) 96%),linear-gradient(90deg,transparent 96%,color-mix(in oklab,var(--accent),#000 80%) 96%);background-size:22px 22px,22px 22px;opacity:.12;border-radius:12px;pointer-events:none}
+<style>
+/* =========================
+   NOVAGATOR COCKPIT v1.6.0
+   ========================= */
 
-    .shell{
-      background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 92%,transparent) 0%,var(--panel) 100%);
-      border:1px solid color-mix(in oklab,var(--panel),#fff 10%);
-      border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.35);
-      padding:12px; display:flex; flex-direction:column; gap:12px; min-height:80vh; position:relative; overflow:hidden
-    }
-    .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid color-mix(in oklab,var(--panel),#fff 12%);padding:8px;border-radius:12px;background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 85%,transparent),color-mix(in oklab,var(--panel) 93%,transparent));box-shadow:0 2px 12px rgba(0,0,0,.25) inset}
-    .title{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
-    .dot{width:10px;height:10px;border-radius:50%}
-    .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
-    .badge{font:600 12px var(--mono);color:var(--accent);border:1px solid color-mix(in oklab,var(--accent),#000 60%);padding:2px 8px;border-radius:999px}
-    .rec{color:var(--err);border-color:color-mix(in oklab,var(--err),#000 60%);display:none}
-    :root.record .rec{display:inline-block}
-    .btn,select{font:600 12px var(--mono);color:var(--text);background:transparent;border:1px solid color-mix(in oklab,var(--muted),#000 50%);padding:6px 10px;border-radius:10px;cursor:pointer;transition:.15s border-color ease}
-    .btn:hover{border-color:color-mix(in oklab,var(--accent),#000 50%)} .btn.primary{border-color:color-mix(in oklab,var(--accent-2),#000 40%);color:var(--accent-2)}
-    .pill{font:600 12px var(--mono);padding:4px 8px;border-radius:999px;border:1px solid color-mix(in oklab,var(--muted),#000 50%)}
+:root{
+  --bg:#0b0f19;
+  --panel:#101623;
+  --panel-2:#0f1422;
+  --text:#e7eefb;
+  --muted:#99a7bf;
+  --accent:#5ee1ff;
+  --accent-2:#7c4dff;
+  --ok:#22c55e;
+  --warn:#f59e0b;
+  --err:#ef4444;
+  --ring: color-mix(in oklab,var(--accent),#000 75%);
+  --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
 
-    .grid{display:grid;grid-template-columns:320px 1fr;gap:12px}
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+@media (prefers-color-scheme: light){
+  :root[data-theme="light"]{
+    --bg:#f7fafc; --panel:#ffffff; --panel-2:#f3f5f9;
+    --text:#0b1220; --muted:#5b687f; --accent:#0066ff; --accent-2:#7c4dff;
+  }
+}
 
-    .panel{border:1px solid color-mix(in oklab,var(--panel),#fff 12%);border-radius:12px;background:color-mix(in oklab,var(--panel) 88%,transparent);padding:10px;display:flex;flex-direction:column;gap:10px;animation:rise .5s ease-out both}
-    .panel h3{margin:0 0 6px;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.04em}
-    .cards{display:grid;grid-template-columns:1fr;gap:8px}
-    .card{border:1px solid color-mix(in oklab,var(--muted),#000 50%);border-radius:10px;padding:8px;display:flex;justify-content:space-between;gap:8px;align-items:center;font:12px var(--mono);background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 80%,transparent),color-mix(in oklab,var(--panel) 92%,transparent))}
-    .card .k{color:var(--muted)} .big{font:700 18px var(--mono)} .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #13203c 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, #1a2a49 0%, transparent 55%),
+    var(--bg);
+  display:flex; justify-content:center; align-items:stretch;
+}
 
-    .console{border:1px solid color-mix(in oklab,var(--panel),#fff 12%);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:50vh;background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 88%,transparent),color-mix(in oklab,var(--panel) 96%,transparent));animation:rise .6s .05s ease-out both}
-    @keyframes rise{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
-    .screen{flex:1;overflow:auto;padding:8px 6px;scrollbar-gutter:stable both-edges}
-    .line{font-family:var(--mono);white-space:pre-wrap;word-break:break-word;line-height:1.45}
-    .line.fade{color:var(--muted)}
-    .line .ts{color:var(--muted);margin-right:8px}
-    .line .tag{padding:1px 6px;border-radius:6px;margin-right:6px;font-weight:700}
-    .tag.OUT{background:color-mix(in oklab,var(--accent) 30%,transparent);color:var(--accent)}
-    .tag.SYS{background:color-mix(in oklab,var(--accent-2) 30%,transparent);color:var(--accent-2)}
-    .tag.ERR{background:color-mix(in oklab,var(--err) 25%,transparent);color:var(--err)}
-    .prompt-row{display:flex;align-items:flex-start;gap:10px}
-    .prompt{font-family:var(--mono);color:var(--muted)}
-    .input{flex:1;min-height:28px;outline:0;border:0;background:transparent;color:var(--text);font-family:var(--mono);font-size:14px;caret-color:var(--accent)}
-    .input[contenteditable="true"]:empty:before{content:attr(data-placeholder);color:var(--muted)}
-    .footer{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font:12px var(--mono)}
-    .kbd{border:1px solid color-mix(in oklab,var(--muted),#000 40%);padding:1px 6px;border-radius:6px;margin:0 2px}
+/* Starfield canvas (optional) */
+#stars{ position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.35; }
 
-    .ticker{position:relative;height:28px;border:1px solid color-mix(in oklab,var(--accent),#000 60%);border-radius:999px;overflow:hidden;background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 85%,transparent),color-mix(in oklab,var(--panel) 95%,transparent));box-shadow:0 0 20px color-mix(in oklab,var(--accent),#000 85%) inset}
-    .ticker .track{position:absolute;white-space:nowrap;will-change:transform;left:0;top:0;padding:5px 0;animation:tick 22s linear infinite;font:600 12px var(--mono);color:color-mix(in oklab,var(--accent),#fff 10%)}
-    @keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.wrap{ width:min(1280px,100%); padding:16px; position:relative; z-index:1; }
+.wrap:before{
+  content:""; position:absolute; inset:8px; border-radius:18px;
+  border:1px solid color-mix(in oklab,var(--accent),#000 85%);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab,var(--panel),#fff 10%) inset,
+    0 20px 60px rgba(0,0,0,.38);
+  pointer-events:none;
+}
+.wrap:after{
+  content:""; position:absolute; inset:16px; border-radius:12px;
+  background-image:
+    linear-gradient(transparent 96%, color-mix(in oklab,var(--accent),#000 80%) 96%),
+    linear-gradient(90deg, transparent 96%, color-mix(in oklab,var(--accent),#000 80%) 96%);
+  background-size:22px 22px, 22px 22px;
+  opacity:.12; pointer-events:none;
+}
 
-    :root.hud .panel{display:none}
-    :root.hud .toolbar .badge:not(.rec){display:none}
-    :root.hud .toolbar select,:root.hud .toolbar #btnClear{display:none}
-    :root.hud .wrap:after{opacity:.07}
+.shell{
+  background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 92%, transparent) 0%, var(--panel) 100%);
+  border:1px solid color-mix(in oklab,var(--panel),#fff 12%);
+  border-radius:16px; padding:12px; min-height:78vh;
+  display:flex; flex-direction:column; gap:12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  position:relative; overflow:hidden;
+  backdrop-filter:saturate(120%) blur(2px);
+}
 
-    .activate{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg,rgba(0,0,0,.35),rgba(0,0,0,.35));backdrop-filter:saturate(120%) blur(1px)}
-    .activate .inner{border:1px dashed color-mix(in oklab,var(--accent),#000 50%);padding:18px 22px;border-radius:12px;background:color-mix(in oklab,var(--panel),#000 10%);font:14px var(--mono);display:flex;gap:12px;align-items:center}
-    .activate button{font:600 12px var(--mono);color:var(--accent);background:transparent;border:1px solid color-mix(in oklab,var(--accent),#000 50%);padding:6px 10px;border-radius:10px;cursor:pointer}
-    .hidden{display:none}
+/* Toolbar */
+.toolbar{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  border:1px solid color-mix(in oklab,var(--panel),#fff 12%);
+  background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 85%, transparent), color-mix(in oklab,var(--panel) 93%, transparent));
+  padding:8px; border-radius:12px;
+  box-shadow: 0 2px 14px rgba(0,0,0,.28) inset, 0 0 34px rgba(0,0,0,.2);
+}
+.title{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
+.dot{width:10px; height:10px; border-radius:50%}
+.dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
+.badge{font:600 12px var(--mono); color:var(--accent); border:1px solid color-mix(in oklab,var(--accent),#000 60%); padding:2px 8px; border-radius:999px}
+.badge.rec{color:var(--err); border-color: color-mix(in oklab,var(--err),#000 60%); display:none}
+:root.record .badge.rec{display:inline-block}
 
-    /* === NOVAGATOR STYLE PACK v1 (polish) === */
-    :root{ --ring: color-mix(in oklab,var(--accent),#000 75%); }
-    .shell{ backdrop-filter: saturate(120%) blur(2px); }
-    .toolbar{ box-shadow: 0 2px 14px rgba(0,0,0,.35) inset, 0 0 40px rgba(0,0,0,.2); }
-    .panel, .console{ box-shadow: 0 8px 30px rgba(0,0,0,.35); }
-    .card .k{ opacity:.75 }
-    .card .big{ text-shadow: 0 0 10px rgba(94,225,255,.35); }
-    .ticker{ box-shadow: 0 0 0 1px var(--ring) inset, 0 0 12px color-mix(in oklab,var(--accent),#000 70%) inset; }
-    .ticker .track{ text-shadow: 0 0 8px color-mix(in oklab,var(--accent),#fff 10%); letter-spacing:.02em }
-    .wrap:before{ box-shadow: 0 0 0 1px color-mix(in oklab,var(--panel),#fff 10%) inset, 0 0 80px rgba(94,225,255,.08); }
-    .gridfx .wrap:after{ opacity:.18 }
+.pill{font:600 12px var(--mono); padding:4px 8px; border-radius:999px; border:1px solid color-mix(in oklab,var(--muted),#000 50%)}
+select, .btn{ font:600 12px var(--mono); color:var(--text); background:transparent; border:1px solid color-mix(in oklab,var(--muted),#000 50%); padding:6px 10px; border-radius:10px; cursor:pointer; transition:.15s border-color ease }
+.btn:hover, select:hover{ border-color: color-mix(in oklab,var(--accent),#000 45%) }
+.btn.primary{ color:var(--accent-2); border-color: color-mix(in oklab,var(--accent-2),#000 45%) }
 
-    /* Starfield canvas (optional, toggled by ?fx=stars) */
-    #stars{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.6; }
-    .shell > *{ position:relative; z-index:1 }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="shell">
-      <!-- Optional starfield layer -->
-      <canvas id="stars" width="0" height="0" hidden></canvas>
-
-      <div class="toolbar">
-        <div class="title">
-          <span class="dot ok" id="led"></span>
-          <span>Novagator Cockpit</span>
-          <span class="badge rec" id="recBadge">REC</span>
-          <span class="badge" id="ver">v1.5.1</span>
-        </div>
-        <span class="pill" id="statusPill">status: —</span>
-        <span class="pill" id="latencyPill">latency: —</span>
-        <span class="pill" id="themePill">theme: auto</span>
-        <div style="flex:1"></div>
-        <select id="profileSel" title="Profile"><option value="dev">dev</option><option value="stage">stage</option><option value="prod">prod</option></select>
-        <select id="themeSel" title="Theme"><option value="auto">auto</option><option value="light">light</option><option value="dark">dark</option></select>
-        <button class="btn" id="btnPing">Ping</button>
-        <button class="btn primary" id="btnDemo">Run Demo</button>
-        <button class="btn" id="btnRecord">Record</button>
-        <button class="btn" id="btnClear">Clear</button>
-      </div>
-
-      <div class="grid">
-        <aside class="panel" id="inst">
-          <h3>Instruments</h3>
-          <div class="cards">
-            <div class="card"><span class="k">Profile</span><span id="cardProfile" class="big">dev</span></div>
-            <div class="card"><span class="k">API Base</span><span id="cardApi" style="overflow:hidden;text-overflow:ellipsis;max-width:60%"></span></div>
-            <div class="card"><span class="k">Status URL</span><span id="cardStatusUrl" style="overflow:hidden;text-overflow:ellipsis;max-width:60%"></span></div>
-            <div class="card"><span class="k">Version</span><span id="cardVersion">—</span></div>
-            <div class="card"><span class="k">Last Status</span><span id="cardStatus" class="big">—</span></div>
-            <div class="card"><span class="k">Latency</span><span id="cardLatency" class="big">—</span></div>
-          </div>
-        </aside>
-
-        <main class="console" role="region" aria-label="Developer console">
-          <section id="screen" class="screen" aria-live="polite"></section>
-          <div class="prompt-row">
-            <div class="prompt" aria-hidden="true">➜</div>
-            <div id="input" class="input" contenteditable="true" spellcheck="false" role="textbox" aria-label="Console input" data-placeholder="Type a command… (try 'help')"></div>
-          </div>
-          <div class="footer">
-            <div>Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete · <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear · <span class="kbd">Shift</span>+<span class="kbd">Enter</span> newline · use <span class="kbd">;</span> to chain</div>
-            <div id="themeIndicator">theme: auto</div>
-          </div>
-        </main>
-      </div>
-
-      <div class="ticker" id="ticker" style="margin-top:8px;">
-        <div class="track" id="tickerTrack">NOVAGATOR ◦ READY ◦ Type 'help' or click Run Demo ◦ </div>
-      </div>
-
-      <div id="activate" class="activate">
-        <div class="inner"><span>Click to activate console</span><button id="btnActivate">Activate</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <script>
-  ;(() => {
-    'use strict';
-
-    // Error guard (prints on screen)
-    const screenEl = () => document.querySelector("#screen");
-    const printErr = (m) => {
-      const el = document.createElement("div");
-      el.className = "line";
-      el.innerHTML = `<span class="ts">[${new Date().toLocaleTimeString()}]</span><span class="tag ERR">ERR</span>${String(m)}`;
-      (screenEl()||document.body).appendChild(el);
-    };
-    window.addEventListener("error", e => printErr(e?.message || e));
-    window.addEventListener("unhandledrejection", e => printErr((e && e.reason && e.reason.message) || "Promise rejection"));
-
-    // DOM
-    const $ = s => document.querySelector(s);
-    const screen = $("#screen"), input = $("#input"), themeIndicator = $("#themeIndicator"), verEl = $("#ver");
-    const led = $("#led"), statusPill = $("#statusPill"), latencyPill = $("#latencyPill");
-    const profileSel = $("#profileSel"), themeSel = $("#themeSel");
-    const btnPing = $("#btnPing"), btnDemo = $("#btnDemo"), btnRecord = $("#btnRecord"), btnClear = $("#btnClear");
-    const cardApi = $("#cardApi"), cardStatusUrl = $("#cardStatusUrl"), cardVersion = $("#cardVersion"), cardStatus = $("#cardStatus"), cardLatency = $("#cardLatency"), cardProfile = $("#cardProfile");
-    const ticker = $("#ticker"), tickerTrack = $("#tickerTrack");
-    const activate = $("#activate"), btnActivate = $("#btnActivate");
-    const ver = (verEl?.textContent || 'v0.0.0').trim();
-
-    // Defaults / Profiles
-    const NV_DEFAULTS = Object.freeze({ version:"1.5.1", apiBase:"https://api.example.dev", statusUrl:"https://httpbin.org/status/200" });
-    const DEFAULT_PROFILES = Object.freeze({
-      dev:{ env:"dev", apiBase:"https://api.example.dev", statusUrl:"https://httpbin.org/status/200", version:"dev" },
-      stage:{ env:"stage", apiBase:"https://api.example.stage", statusUrl:"https://httpbin.org/status/200", version:"staging" },
-      prod:{ env:"prod", apiBase:"https://api.example.com", statusUrl:"https://httpbin.org/status/200", version:"stable" }
-    });
-
-    // State
-    const state = {
-      history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
-      histIdx: null,
-      theme: localStorage.getItem("nv.theme") || "auto",
-      commands: {},
-      aliases: JSON.parse(localStorage.getItem("nv.aliases") || "{}"),
-      cfg: JSON.parse(localStorage.getItem("nv.config") || JSON.stringify(NV_DEFAULTS)),
-      profiles: JSON.parse(localStorage.getItem("nv.profiles") || JSON.stringify(DEFAULT_PROFILES)),
-      lastOut: "", tickerOn: true, tickerSpeed: 22000, monitorTimer: null
-    };
-    const saveHistory = () => localStorage.setItem("nv.history", JSON.stringify(state.history.slice(-500)));
-    const saveAliases = () => localStorage.setItem("nv.aliases", JSON.stringify(state.aliases));
-    const saveConfig  = () => localStorage.setItem("nv.config", JSON.stringify(state.cfg));
-    const saveProfiles= () => localStorage.setItem("nv.profiles", JSON.stringify(state.profiles));
-
-    // Theme
-    function applyTheme(mode){
-      const root = document.documentElement;
-      if(mode === "auto"){ root.removeAttribute("data-theme"); } else { root.setAttribute("data-theme", mode); }
-      state.theme = mode; localStorage.setItem("nv.theme", mode);
-      (themeIndicator||{}).textContent = `theme: ${mode}`;
-    }
-    applyTheme(state.theme); if (themeSel) themeSel.value = state.theme;
-
-    // Utils
-    const now = () => new Date().toLocaleTimeString();
-    const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    const print = (msg, tag="OUT", cls="") => {
-      const el = document.createElement("div");
-      el.className = `line ${cls}`;
-      el.innerHTML = `<span class="ts">[${now()}]</span><span class="tag ${tag}">${tag}</span>${msg}`;
-      (screen||document.body).appendChild(el);
-      if (screen) screen.scrollTop = screen.scrollHeight;
-    };
-    const ok  = m => { state.lastOut = String(m); print(escapeHtml(m), "OUT"); };
-    const sys = m => print(escapeHtml(m), "SYS", "fade");
-    const err = m => print(escapeHtml(m), "ERR");
-
-    // URL helpers
-    function decodeCmdParam(val){ if(!val) return ""; try { return decodeURIComponent(val.replace(/\+/g, "%20")); } catch { return val; } }
-    function readCmdFromUrl(){
-      try{
-        const qs = new URLSearchParams(location.search), hs = new URLSearchParams((location.hash||"").replace(/^#/,""));
-        const src = k => qs.get(k) || hs.get(k);
-        let cmd = src("cmd") || src("q"); if(!cmd && (src("cmd64")||src("b64"))) try{ cmd = atob(src("cmd64")||src("b64")); }catch{}
-        const shouldClear = ["1","true","yes"].includes((src("clear")||"").toLowerCase());
-        return { cmd: decodeCmdParam(cmd), shouldClear, profile:src("profile"), demo:src("demo"), notion:src("notion"), fx:src("fx") };
-      }catch{ return { cmd:"", shouldClear:false, profile:null, demo:null, notion:null, fx:null }; }
-    }
-
-    function setTicker(text){ if(!tickerTrack) return; tickerTrack.textContent = text.endsWith(" ")?text:(text+" "); tickerTrack.style.animationDuration = state.tickerSpeed + "ms"; }
-    function pushTicker(fragment){ if(!state.tickerOn) return; if(!tickerTrack) return; setTicker(`${tickerTrack.textContent} • ${fragment} `); }
-
-    function calcExpr(expr){
-      if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
-      const sanitized = expr.replace(/\^/g,"**").replace(/,/g,""); const fn = new Function(`return (${sanitized})`);
-      const val = fn(); if(Number.isFinite(val)) return val; throw new Error("Invalid expression");
-    }
-
-    // Commands (same as before; trimmed)
-    const commands = {
-      help(){ ok(`Commands:
-  help | clear | echo <t> | date | time | theme <auto|light|dark> | version | about | uuid
-  calc <expr> | store keys|get|set|del | ascii <text> | open <url> | net ping <url>
-  alias <name>=<command...> | alias | unalias <name>
-  copy last|all | export | import <json> | hist print|clear
-  rise | record on|off|status | hud on|off
-  ticker on|off|set <text>|speed <ms> | monitor on [ms] | monitor off
-  nv version | nv status | config get | config set <k> <v>
-  profile list|use|save|load|del|get <name>
-  demo run|install|uninstall|show|reset
-  url run <query> | url open <query>`); },
-      clear(){ if(screen) screen.innerHTML=""; },
-      echo(...a){ ok(a.join(" ")); }, date(){ ok(new Date().toLocaleDateString()); }, time(){ ok(new Date().toLocaleTimeString()); },
-      theme(arg){ const m=(arg||"").toLowerCase(); if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>"); applyTheme(m); ok(`Theme set to ${m}`); if(themeSel) themeSel.value=m; },
-      version(){ ok(ver); }, about(){ ok("Novagator Cockpit — 1.5.1"); },
-      uuid(){ const u=crypto.randomUUID(); ok(u); navigator.clipboard?.writeText(u).catch(()=>{}); },
-      calc(...args){ const e=args.join(" ").trim(); if(!e) return err("Usage: calc <expression>"); try{ ok(String(calcExpr(e))); }catch(x){ err("Calc error: "+x.message); } },
-      store(sub,key,...rest){ const s=(sub||"").toLowerCase(); if(s==="keys") return ok(Object.keys(localStorage).join(", "));
-        if(s==="get"){ if(!key) return err("Usage: store get <key>"); const raw=localStorage.getItem(key); let v=null; try{ v=JSON.parse(raw); }catch{ v=raw; } return ok(v===null?"(null)":JSON.stringify(v,null,2)); }
-        if(s==="set"){ if(!key) return err("Usage: store set <key> <json|text>"); let v; const raw=rest.join(" "); try{ v=JSON.parse(raw);}catch{v=raw;} localStorage.setItem(key,JSON.stringify(v)); return ok("OK"); }
-        if(s==="del"){ if(!key) return err("Usage: store del <key>"); localStorage.removeItem(key); return ok("Deleted"); }
-        err("Usage: store keys|get|set|del …"); },
-      ascii(...t){ const s=(t.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24); const b=s.split("").map(ch=>ch===" "?"   ":ch).join(" "); ok(`+${"-".repeat(b.length+2)}+\n| ${b} |\n+${"-".repeat(b.length+2)}+`); },
-      open(u){ if(!u) return err("Usage: open <url>"); try{ window.open(u,"_blank","noopener"); ok("Opening: "+u);}catch{err("Failed to open URL");} },
-      async net(sub,u){ if(sub!=="ping"||!u) return err("Usage: net ping <url>"); const t0=performance.now(); try{ await fetch(u,{method:"HEAD",mode:"no-cors"}); ok(`Pinged ${u} in ~${Math.round(performance.now()-t0)}ms (HEAD,no-cors)`);}catch{err("Network error (likely CORS).");} },
-      alias(def){ if(!def){ const k=Object.keys(state.aliases); return ok(k.length?k.map(x=>`${x} = ${state.aliases[x]}`).join("\n"):"(no aliases)"); }
-        const m=String(def).split("="); if(m.length<2) return err("Usage: alias <name>=<command...>"); const name=m.shift().trim(), val=m.join("=").trim(); if(!name||!val) return err("Usage: alias <name>=<command...>"); state.aliases[name]=val; saveAliases(); ok(`Alias set: ${name} = ${val}`); },
-      unalias(n){ if(!n) return err("Usage: unalias <name>"); if(!(n in state.aliases)) return err("No such alias: "+n); delete state.aliases[n]; saveAliases(); ok(`Alias removed: ${n}`); },
-      nv(sub){ const a=(sub||"").toLowerCase(); if(a==="version") return ok(`Novagator ${state.cfg.version||NV_DEFAULTS.version}`); if(a==="status") return commands["nv.status"](); err("Usage: nv version | nv status"); },
-      async "nv.status"(){ const u=state.cfg.statusUrl||NV_DEFAULTS.statusUrl; if(!u||u.includes("example.com")) return err("Set statusUrl: config set statusUrl https://your.site/health");
-        const t0=performance.now(); try{ const res=await fetch(u,{method:"GET",mode:"cors"}); const ms=Math.round(performance.now()-t0);
-          ok(`Status ${res.status} ${res.ok?"OK":"NOT OK"} in ~${ms}ms`); if(statusPill) statusPill.textContent=`status: ${res.status}`; if(latencyPill) latencyPill.textContent=`latency: ${ms}ms`;
-          if(cardStatus) cardStatus.textContent=res.status+(res.ok?" OK":" FAIL"); if(cardLatency) cardLatency.textContent=ms+"ms"; if(led) led.className="dot "+(res.ok?"ok":"err"); pushTicker(`STATUS ${res.status}${res.ok?" OK":""} • ${ms}ms`);
-        }catch{ err("Could not reach status URL"); if(statusPill) statusPill.textContent="status: error"; if(led) led.className="dot err"; pushTicker("STATUS error"); } },
-      config(sub,k,...r){ const a=(sub||"").toLowerCase(); if(a==="get") return ok(JSON.stringify(state.cfg,null,2));
-        if(a==="set"){ if(!k) return err("Usage: config set <key> <value>"); const v=r.join(" ").trim(); if(!v) return err("Provide a value"); state.cfg[k]=v; saveConfig(); ok(`config[${k}] = ${v}`); updateInstruments(); return; }
-        err("Usage: config get | config set <key> <value>"); },
-      profile(act,name){ const a=(act||"").toLowerCase(); if(!a||a==="list") return ok(Object.keys(state.profiles).join(", ")+"\n"+JSON.stringify(state.profiles,null,2));
-        if(["use","load"].includes(a)){ if(!name) return err("Usage: profile use <name>"); if(!(name in state.profiles)) return err("No such profile: "+name); state.cfg={...state.profiles[name]}; saveConfig(); ok(`Profile '${name}' applied.`); updateInstruments(); if(profileSel) profileSel.value=name; pushTicker(`PROFILE ${name.toUpperCase()}`); return;}
-        if(a==="save"){ if(!name) return err("Usage: profile save <name>"); state.profiles[name]={...state.cfg}; saveProfiles(); ok(`Profile '${name}' saved.`); return;}
-        if(a==="del"){ if(!name) return err("Usage: profile del <name>"); if(!(name in state.profiles)) return err("No such profile: "+name); delete state.profiles[name]; saveProfiles(); ok(`Profile '${name}' deleted.`); return;}
-        if(a==="get"){ if(!name) return err("Usage: profile get <name>"); if(!(name in state.profiles)) return err("No such profile: "+name); ok(JSON.stringify(state.profiles[name],null,2)); return;}
-        err("Usage: profile list | use <name> | save <name> | load <name> | del <name> | get <name>"); },
-      copy(what){ const w=(what||"").toLowerCase(); if(w==="last"){ if(!state.lastOut) return err("Nothing to copy"); navigator.clipboard?.writeText(state.lastOut).catch(()=>{}); return ok(state.lastOut);} if(w==="all"){ const t=screen?.innerText||""; navigator.clipboard?.writeText(t).catch(()=>{}); return ok("(screen copied)"); } err("Usage: copy last|all"); },
-      export(){ const p={history:state.history,aliases:state.aliases,config:state.cfg,startup:(()=>{try{return JSON.parse(localStorage.getItem("nv.startup")||"null")}catch{return null}})(),profiles:state.profiles}; const t=JSON.stringify(p,null,2); ok(t); navigator.clipboard?.writeText(t).catch(()=>{}); },
-      import(...a){ const raw=a.join(" "); try{ const d=JSON.parse(raw); if(d.history) state.history=d.history,saveHistory(); if(d.aliases) state.aliases=d.aliases,saveAliases(); if(d.config) state.cfg=d.config,saveConfig(); if(d.startup!==undefined) localStorage.setItem("nv.startup",JSON.stringify(d.startup)); if(d.profiles) state.profiles=d.profiles,saveProfiles(); ok("Import OK."); updateInstruments(); }catch(x){ err("Import error: "+(x?.message||x)); } },
-      hist(s){ const a=(s||"print").toLowerCase(); if(a==="clear"){ state.history=[]; saveHistory(); ok("History cleared."); } else ok(state.history.slice(-200).join("\n")); },
-      demo(s){ const a=(s||"run").toLowerCase(); const needs=!state.cfg.statusUrl||String(state.cfg.statusUrl).includes("example.com");
-        const script=["clear","theme dark","ascii NOVAGATOR","alias st=nv status",needs?"config set statusUrl https://httpbin.org/status/200":null,"nv status","help"].filter(Boolean).join(" ; ");
-        if(a==="run") runCommand(script),ok("Demo executed."); else if(a==="show") ok(script); else if(a==="install") localStorage.setItem("nv.startup",JSON.stringify(script)),ok("Demo installed."); else if(a==="uninstall") localStorage.removeItem("nv.startup"),ok("Demo removed."); else if(a==="reset"){ localStorage.clear(); ok("State cleared."); runCommand(script);} else err("Usage: demo [run|install|uninstall|show|reset]"); },
-      url(act,...rest){ const q=rest.join(" ").trim(); if(!act||!q) return err("Usage: url run <query> | url open <query>");
-        if(act==="run"){ try{ const qp=new URLSearchParams(q); const clr=["1","true","yes"].includes((qp.get("clear")||"").toLowerCase()); let c=qp.get("cmd"); if(!c&&qp.get("cmd64")) try{c=atob(qp.get("cmd64"))}catch{} if(!c) return err("url run: no cmd"); if(clr) commands.clear(); sys("Running URL command…"); runCommand(decodeCmdParam(c)); }catch(x){ err("url run error: "+(x?.message||x)); } }
-        else if(act==="open"){ const base=location.origin+location.pathname; const u=`${base}?${q}`; window.open(u,"_blank","noopener"); ok("Opened: "+u); }
-        else err("Usage: url run <query> | url open <query>"); },
-      rise(){ document.querySelectorAll(".panel,.console").forEach(el=>{ el.style.animation="none"; el.offsetHeight; el.style.animation="rise .6s ease-out both"; }); ok("Rise played."); },
-      record(m){ const r=document.documentElement; const a=(m||"").toLowerCase(); if(a==="on"){r.classList.add("record");ok("Record ON");} else if(a==="off"){r.classList.remove("record");ok("Record OFF");} else if(a==="status"){ ok(r.classList.contains("record")?"Record ON":"Record OFF"); } else err("Usage: record on|off|status"); },
-      hud(m){ const r=document.documentElement; const a=(m||"").toLowerCase(); if(a==="on"){r.classList.add("hud");ok("HUD ON");} else if(a==="off"){r.classList.remove("hud");ok("HUD OFF");} else err("Usage: hud on|off"); },
-      ticker(sub,...rest){ const a=(sub||"").toLowerCase(),p=rest.join(" "); if(a==="on"){state.tickerOn=true; if(ticker) ticker.style.display="block"; ok("Ticker ON");}
-        else if(a==="off"){state.tickerOn=false; if(ticker) ticker.style.display="none"; ok("Ticker OFF");}
-        else if(a==="set"){ if(!p) return err("Usage: ticker set <text>"); setTicker(p); ok("Ticker set.");}
-        else if(a==="speed"){ const n=Number(p); if(!Number.isFinite(n)||n<2000) return err("Usage: ticker speed <ms> >=2000"); state.tickerSpeed=n; setTicker(tickerTrack?.textContent?.trim()||""); ok("Ticker speed set.");}
-        else err("Usage: ticker on|off|set <text>|speed <ms>"); },
-      monitor(sub,ms){ const a=(sub||"").toLowerCase(); if(a==="on"||a==="start"){ const t=Number(ms)||30000; if(state.monitorTimer) clearInterval(state.monitorTimer); state.monitorTimer=setInterval(()=>commands["nv.status"](),t); ok(`Monitor ON (${t}ms)`);} else if(a==="off"||a==="stop"){ if(state.monitorTimer) clearInterval(state.monitorTimer),state.monitorTimer=null; ok("Monitor OFF."); } else err("Usage: monitor on [ms] | monitor off"); }
-    };
-    state.commands = commands;
-
-    // Command runner
-    function splitCommands(raw){ const out=[],s=raw; let cur="",q=null; for(const ch of s){ if(ch==="'"||ch==='"'){ q=(q===ch?null:(q??ch)); cur+=ch; } else if(ch===";"&&!q){ out.push(cur.trim()); cur=""; } else cur+=ch; } if(cur.trim()) out.push(cur.trim()); return out; }
-    const expandAliases = line => { const [first,...rest]=line.trim().split(/\s+/); return (first in state.aliases)?(state.aliases[first]+(rest.length?" "+rest.join(" "):"")):line; };
-    function runCommand(raw){
-      if(!raw||!raw.trim()) return;
-      if(state.history[state.history.length-1]!==raw){ state.history.push(raw); saveHistory(); }
-      state.histIdx=null;
-      for(const line of splitCommands(raw).map(expandAliases)){
-        if(!line) continue;
-        print(escapeHtml("➜ "+line),"SYS","fade");
-        const [cmd,...args]=line.split(/\s+/); const fn=state.commands[cmd?.toLowerCase()];
-        if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); continue; }
-        try{ const r=fn.apply(null,args); if(r instanceof Promise) r.catch(e=>err("Async error: "+(e?.message||e))); }catch(e){ err(e?.message||String(e)); }
-      }
-    }
-
-    // Input wiring
-    function focusEnd(el){ if(!el) return; el.focus(); const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }
-    if (input){
-      input.addEventListener("keydown",(e)=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); const t=input.textContent; input.textContent=""; runCommand(t); }
-        else if(e.key==="Enter"&&e.shiftKey){ document.execCommand?.("insertLineBreak"); }
-        else if(e.key==="ArrowUp"){ e.preventDefault(); if(state.histIdx===null) state.histIdx=state.history.length; if(state.histIdx>0){ state.histIdx--; input.textContent=state.history[state.histIdx]||""; focusEnd(input);} }
-        else if(e.key==="ArrowDown"){ e.preventDefault(); if(state.histIdx!==null){ state.histIdx++; if(state.histIdx>=state.history.length){ state.histIdx=null; input.textContent=""; } else input.textContent=state.history[state.histIdx]||""; focusEnd(input);} }
-        else if(e.key==="Tab"){ e.preventDefault(); const cur=input.textContent.trim(); if(!cur) return; const keys=Object.keys(state.commands).concat(Object.keys(state.aliases)); const m=keys.filter(k => k.startsWith(cur.toLowerCase())); if(m.length===1){ input.textContent=m[0]+" "; focusEnd(input);} else if(m.length>1){ print("Suggestions: "+m.join(", "),"SYS","fade"); } }
-        else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){ e.preventDefault(); commands.clear(); print("Screen cleared (Ctrl/⌘+L).","SYS","fade"); } });
-      document.querySelector(".console")?.addEventListener("mousedown",()=>setTimeout(()=>focusEnd(input),0));
-    }
-    document.addEventListener("keydown",(e)=>{ if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); const t=input?.textContent.trim(); if(t){ input.textContent=""; runCommand(t);} } });
-
-    // Instruments/toolbar
-    function updateInstruments(){
-      if(cardApi) cardApi.textContent=state.cfg.apiBase||"—";
-      if(cardStatusUrl) cardStatusUrl.textContent=state.cfg.statusUrl||"—";
-      if(cardVersion) cardVersion.textContent=state.cfg.version||NV_DEFAULTS.version;
-      if(cardProfile) cardProfile.textContent=(Object.entries(state.profiles).find(([k,v])=>v.apiBase===state.cfg.apiBase && v.statusUrl===state.cfg.statusUrl)?.[0]) || (profileSel?.value||"dev");
-    }
-    updateInstruments();
-    themeSel && themeSel.addEventListener("change",()=>runCommand(`theme ${themeSel.value}`));
-    profileSel && profileSel.addEventListener("change",()=>runCommand(`profile use ${profileSel.value}`));
-    btnPing && btnPing.addEventListener("click",()=>runCommand("nv status"));
-    btnDemo && btnDemo.addEventListener("click",()=>runCommand("demo run"));
-    btnRecord && btnRecord.addEventListener("click",()=>{ const on=!document.documentElement.classList.contains("record"); runCommand(`record ${on?"on":"off"}`); });
-    btnClear && btnClear.addEventListener("click",()=>runCommand("clear"));
-    btnActivate && btnActivate.addEventListener("click",()=>{ activate?.classList.add("hidden"); focusEnd(input); runCommand("help"); });
-
-    // FX toggles (?fx=stars,grid)
-    (function(){
-      const { fx } = readCmdFromUrl();
-      const list = (fx||"").split(",").map(s=>s.trim()).filter(Boolean);
-      if (list.includes('grid')) document.documentElement.classList.add('gridfx');
-
-      if (list.includes('stars')){
-        const cvs = document.getElementById('stars');
-        if(cvs){
-          cvs.hidden = false;
-          const ctx = cvs.getContext('2d');
-          let w=0,h=0, stars=[];
-          function reset(){
-            const r = cvs.getBoundingClientRect();
-            w = cvs.width  = r.width  * devicePixelRatio;
-            h = cvs.height = r.height * devicePixelRatio;
-            stars = Array.from({length:140}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*0.6 + 0.4, s: Math.random()*2 + 0.6 }));
-          }
-          reset();
-          addEventListener('resize', reset);
-          (function draw(){
-            ctx.clearRect(0,0,w,h);
-            for (const st of stars){
-              st.x += st.z*0.6;
-              if (st.x > w) { st.x = 0; st.y = Math.random()*h; }
-              ctx.beginPath();
-              ctx.fillStyle = `rgba(200,240,255,${0.25*st.z})`;
-              ctx.arc(st.x, st.y, st.s, 0, Math.PI*2);
-              ctx.fill();
-            }
-            requestAnimationFrame(draw);
-          })();
-        }
-      }
-    })();
-
-    // Boot
-    print("INIT OK — Novagator Cockpit "+NV_DEFAULTS.version,"SYS","fade");
-    print("Welcome! Use the toolbar or type 'help'.","SYS","fade");
-    function setTicker(t){ if(!tickerTrack) return; tickerTrack.textContent=t.endsWith(" ")?t:(t+" "); }
-    setTicker("NOVAGATOR ◦ READY ◦ SHIFT+ENTER = newline ◦ DEMO MODE AVAILABLE ◦ ");
-    (function autorun(){
-      try{ const raw=localStorage.getItem("nv.startup"); const startup=raw?(JSON.parse(raw).toString?JSON.parse(raw):raw):null; if(startup&&startup.trim()){ print("Running startup script…","SYS","fade"); runCommand(startup);} }catch{}
-      try{
-        const {cmd,shouldClear,profile,demo,notion} = readCmdFromUrl();
-        if(notion==="1"||notion==="true") runCommand("hud on");
-        if(profile) runCommand(`profile use ${profile}`);
-        if(demo==="1"||demo==="true") runCommand("demo run");
-        if(cmd){ if(shouldClear) commands.clear(); print("Running URL command…","SYS","fade"); runCommand(cmd); }
-      }catch(e){ printErr("URL cmd error: "+(e?.message||e)); }
-      setTimeout(()=>{ if((screen?.children.length||0)<2){ activate?.classList.remove("hidden"); } }, 300);
-      setTimeout(()=>runCommand("help"), 0);
-    })();
-  })();
-  </script>
-</body>
-</html>
+/* Layout */
+.grid{ display:grid; grid-template-columns:320px 1fr; gap:12
