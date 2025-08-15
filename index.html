@@ -63,7 +63,7 @@
         <span class="dot ok" title="status: ok"></span>
         <span>Novagator Developer Console</span>
       </div>
-      <div class="badge" id="ver">v1.2.3</div>
+      <div class="badge" id="ver">v1.2.4</div>
     </div>
 
     <section id="screen" class="screen" aria-live="polite"></section>
@@ -96,14 +96,12 @@
   const themeIndicator = $("#themeIndicator");
   const ver = (document.getElementById('ver')?.textContent || 'v0.0.0').trim();
 
-  // Defaults
   const NV_DEFAULTS = Object.freeze({
-    version: "1.2.3",
+    version: "1.2.4",
     apiBase: "https://example.com/api",
     statusUrl: "https://example.com/health"
   });
 
-  // State
   const state = {
     history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
     histIdx: null,
@@ -113,7 +111,6 @@
     cfg: JSON.parse(localStorage.getItem("nv.config") || JSON.stringify(NV_DEFAULTS)),
   };
 
-  // Theme
   function applyTheme(mode){
     const root = document.documentElement;
     if(mode === "auto"){ root.removeAttribute("data-theme"); }
@@ -124,7 +121,6 @@
   }
   applyTheme(state.theme);
 
-  // Utils
   const now = () => new Date().toLocaleTimeString();
   const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const print = (msg, tag="OUT", cls="") => {
@@ -142,25 +138,37 @@
   const saveAliases = () => localStorage.setItem("nv.aliases", JSON.stringify(state.aliases));
   const saveConfig  = () => localStorage.setItem("nv.config", JSON.stringify(state.cfg));
 
-  // URL param helpers
+  // Param helpers
   function decodeCmdParam(val){
     if(!val) return "";
-    try { return decodeURIComponent(val.replace(/\+/g, "%20")); }
-    catch { return val; }
+    try { return decodeURIComponent(val.replace(/\+/g, "%20")); } catch { return val; }
+  }
+  function readCmdFromUrl(){
+    try{
+      // Support query (?cmd=..., ?cmd64=..., ?q=...) and hash (#cmd=..., etc.)
+      const qs = new URLSearchParams(location.search);
+      const hs = new URLSearchParams((location.hash||"").replace(/^#/, ""));
+      const src = (k)=> qs.get(k) || hs.get(k);
+
+      let cmd = src("cmd") || src("q");
+      if(!cmd && (src("cmd64") || src("b64"))){
+        try{ cmd = atob(src("cmd64") || src("b64")); }catch{}
+      }
+      const shouldClear = ["1","true","yes"].includes((src("clear")||"").toLowerCase());
+      return { cmd: decodeCmdParam(cmd), shouldClear };
+    }catch{ return { cmd:"", shouldClear:false }; }
   }
 
   // Safe calc
   function calcExpr(expr){
     if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
     const sanitized = expr.replace(/\^/g, "**").replace(/,/g,"");
-    // eslint-disable-next-line no-new-func
     const fn = new Function(`return (${sanitized})`);
     const val = fn();
     if(Number.isFinite(val)) return val;
     throw new Error("Invalid expression");
   }
 
-  // Commands
   const commands = {
     help(){
       ok(`Available commands:
@@ -188,133 +196,81 @@
   config set <key> <value>       Set config (apiBase, statusUrl, version)
 `);
       sys("Demo: demo run | demo install | demo uninstall | demo show | demo reset");
-      sys("URL runner: ?cmd=<url-encoded>; use ';' to chain. Example: ?cmd=demo%20run");
+      sys("URL runner: address bar → ?cmd=<url-encoded>; also supports #cmd=… and ?cmd64=…");
+      sys("Console helper: url run <query>  |  url open <query>");
     },
     clear(){ screen.innerHTML = ""; },
     echo(...args){ ok(args.join(" ")); },
     date(){ ok(new Date().toLocaleDateString()); },
     time(){ ok(new Date().toLocaleTimeString()); },
-    theme(arg){
-      const m = (arg||"").toLowerCase();
-      if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>");
-      applyTheme(m); ok(`Theme set to ${m}`);
-    },
+    theme(arg){ const m=(arg||"").toLowerCase(); if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>"); applyTheme(m); ok(`Theme set to ${m}`); },
     version(){ ok(ver); },
     about(){ ok("Novagator Developer Console — self-contained HTML tool for dev & QA."); sys("History persists. Chain with `;`."); },
     uuid(){ const u = crypto.randomUUID(); ok(u); navigator.clipboard?.writeText(u).catch(()=>{}); },
-    calc(...args){ const expr = args.join(" ").trim(); if(!expr) return err("Usage: calc <expression>"); try{ ok(String(calcExpr(expr))); }catch(e){ err("Calc error: " + e.message); } },
+    calc(...args){ const expr=args.join(" ").trim(); if(!expr) return err("Usage: calc <expression>"); try{ ok(String(calcExpr(expr))); }catch(e){ err("Calc error: " + e.message); } },
     store(sub, key, ...rest){
       switch((sub||"").toLowerCase()){
         case "keys": ok(Object.keys(localStorage).join(", ")); break;
-        case "get":
-          if(!key) return err("Usage: store get <key>");
-          { const raw = localStorage.getItem(key); let val=null; try{ val = JSON.parse(raw); }catch{ val = raw; }
-            ok(val===null ? "(null)" : JSON.stringify(val, null, 2)); }
-          break;
-        case "set":
-          if(!key) return err("Usage: store set <key> <json|text>");
-          let val; const rawIn = rest.join(" ");
-          try{ val = JSON.parse(rawIn); }catch{ val = rawIn; }
-          localStorage.setItem(key, JSON.stringify(val)); ok("OK"); break;
+        case "get": if(!key) return err("Usage: store get <key>"); { const raw=localStorage.getItem(key); let val=null; try{ val=JSON.parse(raw); }catch{ val=raw; } ok(val===null?"(null)":JSON.stringify(val,null,2)); } break;
+        case "set": if(!key) return err("Usage: store set <key> <json|text>"); { let val; const rawIn=rest.join(" "); try{ val=JSON.parse(rawIn); }catch{ val=rawIn; } localStorage.setItem(key,JSON.stringify(val)); ok("OK"); } break;
         case "del": if(!key) return err("Usage: store del <key>"); localStorage.removeItem(key); ok("Deleted"); break;
         default: err("Usage: store keys|get|set|del …");
       }
     },
-    ascii(...text){
-      const s = (text.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24);
-      const banner = s.split("").map(ch=>ch===" "?"   ":ch).join(" ");
-      ok(`+${"-".repeat(banner.length+2)}+\n| ${banner} |\n+${"-".repeat(banner.length+2)}+`);
-    },
-    open(url){ if(!url) return err("Usage: open <url>"); try{ window.open(url,"_blank","noopener"); ok("Opening: " + url); }catch{ err("Failed to open URL"); } },
-    async net(sub, url){
-      if(sub!=="ping" || !url) return err("Usage: net ping <url>");
-      const t0 = performance.now();
-      try{ await fetch(url, {method:"HEAD", mode:"no-cors"}); ok(`Pinged ${url} in ~${Math.round(performance.now()-t0)}ms (HEAD, no-cors)`); }
-      catch{ err("Network error (likely CORS) but request attempted."); }
-    },
-    alias(def){
-      if(!def){
-        const keys = Object.keys(state.aliases);
-        return ok(keys.length ? keys.map(k=>`${k} = ${state.aliases[k]}`).join("\n") : "(no aliases)");
-      }
-      const m = String(def).split("=");
-      if(m.length < 2) return err("Usage: alias <name>=<command...>");
-      const name = m.shift().trim();
-      const value = m.join("=").trim();
-      if(!name || !value) return err("Usage: alias <name>=<command...>");
-      state.aliases[name] = value; saveAliases(); ok(`Alias set: ${name} = ${value}`);
-    },
-    unalias(name){ if(!name) return err("Usage: unalias <name>"); if(!(name in state.aliases)) return err("No such alias: " + name); delete state.aliases[name]; saveAliases(); ok(`Alias removed: ${name}`); },
+    ascii(...text){ const s=(text.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24); const banner=s.split("").map(ch=>ch===" "?"   ":ch).join(" "); ok(`+${"-".repeat(banner.length+2)}+\n| ${banner} |\n+${"-".repeat(banner.length+2)}+`); },
+    open(url){ if(!url) return err("Usage: open <url>"); try{ window.open(url,"_blank","noopener"); ok("Opening: "+url); }catch{ err("Failed to open URL"); } },
+    async net(sub,url){ if(sub!=="ping"||!url) return err("Usage: net ping <url>"); const t0=performance.now(); try{ await fetch(url,{method:"HEAD",mode:"no-cors"}); ok(`Pinged ${url} in ~${Math.round(performance.now()-t0)}ms (HEAD, no-cors)`);}catch{ err("Network error (likely CORS) but request attempted."); } },
+    alias(def){ if(!def){ const keys=Object.keys(state.aliases); return ok(keys.length?keys.map(k=>`${k} = ${state.aliases[k]}`).join("\n"):"(no aliases)"); } const m=String(def).split("="); if(m.length<2) return err("Usage: alias <name>=<command...>"); const name=m.shift().trim(); const value=m.join("=").trim(); if(!name||!value) return err("Usage: alias <name>=<command...>"); state.aliases[name]=value; saveAliases(); ok(`Alias set: ${name} = ${value}`); },
+    unalias(name){ if(!name) return err("Usage: unalias <name>"); if(!(name in state.aliases)) return err("No such alias: "+name); delete state.aliases[name]; saveAliases(); ok(`Alias removed: ${name}`); },
+    nv(sub){ switch((sub||"").toLowerCase()){ case "version": ok(`Novagator ${state.cfg.version || NV_DEFAULTS.version}`); break; case "status": return commands["nv.status"](); default: err("Usage: nv version | nv status"); } },
+    async "nv.status"(){ const url=state.cfg.statusUrl || NV_DEFAULTS.statusUrl; if(!url||url.includes("example.com")) return err("Set a real status URL first: config set statusUrl https://your.site/health"); const t0=performance.now(); try{ const res=await fetch(url,{method:"GET",mode:"cors"}); ok(`Status ${res.status} ${res.ok?"OK":"NOT OK"} in ~${Math.round(performance.now()-t0)}ms`);}catch{ err("Could not reach status URL (CORS or network). Try net ping "+url); } },
+    config(sub,key,...rest){ switch((sub||"").toLowerCase()){ case "get": ok(JSON.stringify(state.cfg,null,2)); break; case "set": if(!key) return err("Usage: config set <key> <value>"); const v=rest.join(" ").trim(); if(!v) return err("Provide a value"); state.cfg[key]=v; saveConfig(); ok(`config[${key}] = ${v}`); break; default: err("Usage: config get | config set <key> <value>"); } },
 
-    nv(sub){
-      switch((sub||"").toLowerCase()){
-        case "version": ok(`Novagator ${state.cfg.version || NV_DEFAULTS.version}`); break;
-        case "status": return commands["nv.status"]();
-        default: err("Usage: nv version | nv status");
-      }
-    },
-    async "nv.status"(){
-      const url = state.cfg.statusUrl || NV_DEFAULTS.statusUrl;
-      if(!url || url.includes("example.com")) return err("Set a real status URL first: config set statusUrl https://your.site/health");
-      const t0 = performance.now();
-      try{
-        const res = await fetch(url, { method:"GET", mode:"cors" });
-        ok(`Status ${res.status} ${res.ok?"OK":"NOT OK"} in ~${Math.round(performance.now()-t0)}ms`);
-      }catch{
-        err("Could not reach status URL (CORS or network). Try net ping " + url);
-      }
-    },
-    config(sub, key, ...rest){
-      switch((sub||"").toLowerCase()){
-        case "get": ok(JSON.stringify(state.cfg, null, 2)); break;
-        case "set":
-          if(!key) return err("Usage: config set <key> <value>");
-          const v = rest.join(" ").trim();
-          if(!v) return err("Provide a value");
-          state.cfg[key] = v; saveConfig(); ok(`config[${key}] = ${v}`); break;
-        default: err("Usage: config get | config set <key> <value>");
-      }
-    },
-
-    // --- Demo Mode ---
+    // Demo Mode
     demo(sub){
-      const action = (sub || "run").toLowerCase();
-      const needsStatus =
-        !state.cfg.statusUrl || String(state.cfg.statusUrl).includes("example.com");
-      const script = [
-        "clear",
-        "theme dark",
-        "ascii NOVAGATOR",
-        "alias st=nv status",
-        needsStatus ? "config set statusUrl https://httpbin.org/status/200" : null,
-        "nv status",
-        "help"
+      const action=(sub||"run").toLowerCase();
+      const needsStatus=!state.cfg.statusUrl || String(state.cfg.statusUrl).includes("example.com");
+      const script=[
+        "clear","theme dark","ascii NOVAGATOR","alias st=nv status",
+        needsStatus?"config set statusUrl https://httpbin.org/status/200":null,
+        "nv status","help"
       ].filter(Boolean).join(" ; ");
+      if(action==="run"){ runCommand(script); ok("Demo Mode: sequence executed."); }
+      else if(action==="show"){ ok(script); }
+      else if(action==="install"){ localStorage.setItem("nv.startup", JSON.stringify(script)); ok("Demo Mode: startup script installed (runs on next load)."); }
+      else if(action==="uninstall"){ localStorage.removeItem("nv.startup"); ok("Demo Mode: startup script removed."); }
+      else if(action==="reset"){ localStorage.removeItem("nv.history"); localStorage.removeItem("nv.aliases"); localStorage.removeItem("nv.config"); ok("Demo Mode: state cleared."); runCommand(script); }
+      else { err("Usage: demo [run|install|uninstall|show|reset]"); }
+    },
 
-      if(action === "run"){
-        runCommand(script); ok("Demo Mode: sequence executed.");
-      } else if(action === "show"){
-        ok(script);
-      } else if(action === "install"){
-        localStorage.setItem("nv.startup", JSON.stringify(script));
-        ok("Demo Mode: startup script installed (runs on next load).");
-      } else if(action === "uninstall"){
-        localStorage.removeItem("nv.startup");
-        ok("Demo Mode: startup script removed.");
-      } else if(action === "reset"){
-        localStorage.removeItem("nv.history");
-        localStorage.removeItem("nv.aliases");
-        localStorage.removeItem("nv.config");
-        ok("Demo Mode: state cleared.");
-        runCommand(script);
+    // URL command helper (run from inside the console)
+    url(action, ...rest){
+      const q = rest.join(" ").trim(); // e.g., clear=1&cmd=demo%20run
+      if(!action || !q) return err("Usage: url run <query> | url open <query>");
+      if(action==="run"){
+        try{
+          const qp = new URLSearchParams(q);
+          const shouldClear = ["1","true","yes"].includes((qp.get("clear")||"").toLowerCase());
+          let cmd = qp.get("cmd");
+          if(!cmd && qp.get("cmd64")){ try{ cmd = atob(qp.get("cmd64")); }catch{} }
+          if(!cmd) return err("url run: no cmd provided");
+          if(shouldClear) commands.clear();
+          sys("Running URL command…");
+          runCommand(decodeCmdParam(cmd));
+        }catch(e){ err("url run error: " + (e?.message || e)); }
+      } else if(action==="open"){
+        try{
+          const base = location.origin + location.pathname;
+          const url = `${base}?${q}`;
+          open(url);
+        }catch{ err("url open error."); }
       } else {
-        err("Usage: demo [run|install|uninstall|show|reset]");
+        err("Usage: url run <query> | url open <query>");
       }
     }
   };
   state.commands = commands;
 
-  // Chaining + aliases
   function splitCommands(raw){
     const out=[], s=raw; let cur="", q=null;
     for(const ch of s){
@@ -330,12 +286,10 @@
     return (first in state.aliases) ? (state.aliases[first] + (rest.length ? " " + rest.join(" ") : "")) : line;
   };
 
-  // Runner
   function runCommand(raw){
     if(!raw || !raw.trim()) return;
     if(state.history[state.history.length-1] !== raw){ state.history.push(raw); saveHistory(); }
     state.histIdx = null;
-
     for(const line of splitCommands(raw).map(expandAliases)){
       if(!line) continue;
       print(escapeHtml("➜ " + line), "SYS", "fade");
@@ -349,7 +303,6 @@
     }
   }
 
-  // Autocomplete
   function complete(current){
     const keys = Object.keys(state.commands).concat(Object.keys(state.aliases));
     const matches = keys.filter(k => k.startsWith(current.toLowerCase()));
@@ -358,7 +311,6 @@
     return null;
   }
 
-  // Caret
   function focusEnd(el){
     el.focus();
     const range = document.createRange();
@@ -369,7 +321,6 @@
     sel.addRange(range);
   }
 
-  // Input handlers
   input.addEventListener("keydown", (e) => {
     if(e.key === "Enter"){
       e.preventDefault();
@@ -400,7 +351,6 @@
     }
   });
   document.querySelector(".console").addEventListener("mousedown", () => setTimeout(()=>focusEnd(input), 0));
-  // Global Enter fallback: runs even if input isn't focused
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -427,24 +377,18 @@
     }
   } catch {}
 
-  // URL Command Runner: ?cmd=<url-encoded> or ?cmd64=<base64>; optional &clear=1
+  // URL Command Runner (query or hash)
   try {
-    const qp = new URLSearchParams(location.search);
-    const shouldClear = ["1","true","yes"].includes((qp.get("clear")||"").toLowerCase());
-    let cmd = qp.get("cmd");
-    if (!cmd && qp.get("cmd64")) {
-      try { cmd = atob(qp.get("cmd64")); } catch {}
-    }
+    const { cmd, shouldClear } = readCmdFromUrl();
     if (cmd) {
       if (shouldClear) { commands.clear(); }
       sys("Running URL command…");
-      runCommand(decodeCmdParam(cmd));
+      runCommand(cmd);
     }
   } catch (e) {
     err("URL cmd error: " + (e?.message || e));
   }
 
-  // Auto-show help once on load
   setTimeout(() => runCommand('help'), 0);
 })();
 </script>
