@@ -143,6 +143,9 @@
   applyTheme(state.theme);
 
   // Utils
+    // init flags
+  let _nvRanSomething = false;
+
   const now = () => new Date().toLocaleTimeString();
   const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const print = (msg, tag="OUT", cls="") => {
@@ -558,28 +561,35 @@
   try {
     const raw = localStorage.getItem("nv.startup");
     const startup = raw ? (JSON.parse(raw).toString ? JSON.parse(raw) : raw) : null;
-    if (startup && typeof startup === "string" && startup.trim()) {
+        if (startup && typeof startup === "string" && startup.trim()) {
       sys("Running startup script…");
+      _nvRanSomething = true;
       runCommand(startup);
     }
+
   } catch {}
 
   // URL runner: profile/demo/cmd from query or hash
   try {
-    const { cmd, shouldClear, profile, demo } = readCmdFromUrl();
-    if (profile) runCommand(`profile use ${profile}`);
-    if (demo === "1" || demo === "true") runCommand("demo run");
+       if (profile) { runCommand(`profile use ${profile}`); _nvRanSomething = true; }
+    if (demo === "1" || demo === "true") { runCommand("demo run"); _nvRanSomething = true; }
     if (cmd) {
       if (shouldClear) { commands.clear(); }
       sys("Running URL command…");
+      _nvRanSomething = true;
       runCommand(cmd);
     }
+
   } catch (e) {
     err("URL cmd error: " + (e?.message || e));
   }
 
-  // Auto-show help
-  setTimeout(() => runCommand('help'), 0);
+      // Auto-show help (only if nothing else ran)
+  if (screen.children.length === 0 && !_nvRanSomething) {
+    setTimeout(() => runCommand('help'), 0);
+  }
+
+
 })();
 </script>
 </body>
