@@ -63,7 +63,7 @@
         <span class="dot ok" title="status: ok"></span>
         <span>Novagator Developer Console</span>
       </div>
-      <div class="badge" id="ver">v1.2.2</div>
+      <div class="badge" id="ver">v1.2.3</div>
     </div>
 
     <section id="screen" class="screen" aria-live="polite"></section>
@@ -95,11 +95,10 @@
   const toastEl = $("#toast");
   const themeIndicator = $("#themeIndicator");
   const ver = (document.getElementById('ver')?.textContent || 'v0.0.0').trim();
-  window._nv_ver = ver;
 
   // Defaults
   const NV_DEFAULTS = Object.freeze({
-    version: "1.2.2",
+    version: "1.2.3",
     apiBase: "https://example.com/api",
     statusUrl: "https://example.com/health"
   });
@@ -143,6 +142,13 @@
   const saveAliases = () => localStorage.setItem("nv.aliases", JSON.stringify(state.aliases));
   const saveConfig  = () => localStorage.setItem("nv.config", JSON.stringify(state.cfg));
 
+  // URL param helpers
+  function decodeCmdParam(val){
+    if(!val) return "";
+    try { return decodeURIComponent(val.replace(/\+/g, "%20")); }
+    catch { return val; }
+  }
+
   // Safe calc
   function calcExpr(expr){
     if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
@@ -182,6 +188,7 @@
   config set <key> <value>       Set config (apiBase, statusUrl, version)
 `);
       sys("Demo: demo run | demo install | demo uninstall | demo show | demo reset");
+      sys("URL runner: ?cmd=<url-encoded>; use ';' to chain. Example: ?cmd=demo%20run");
     },
     clear(){ screen.innerHTML = ""; },
     echo(...args){ ok(args.join(" ")); },
@@ -201,7 +208,8 @@
         case "keys": ok(Object.keys(localStorage).join(", ")); break;
         case "get":
           if(!key) return err("Usage: store get <key>");
-          { const raw = localStorage.getItem(key); ok(raw ? JSON.stringify(JSON.parse(raw), null, 2) : "(null)"); }
+          { const raw = localStorage.getItem(key); let val=null; try{ val = JSON.parse(raw); }catch{ val = raw; }
+            ok(val===null ? "(null)" : JSON.stringify(val, null, 2)); }
           break;
         case "set":
           if(!key) return err("Usage: store set <key> <json|text>");
@@ -269,7 +277,7 @@
     },
 
     // --- Demo Mode ---
-    demo(sub, ...args){
+    demo(sub){
       const action = (sub || "run").toLowerCase();
       const needsStatus =
         !state.cfg.statusUrl || String(state.cfg.statusUrl).includes("example.com");
@@ -284,8 +292,7 @@
       ].filter(Boolean).join(" ; ");
 
       if(action === "run"){
-        runCommand(script);
-        ok("Demo Mode: sequence executed.");
+        runCommand(script); ok("Demo Mode: sequence executed.");
       } else if(action === "show"){
         ok(script);
       } else if(action === "install"){
@@ -409,6 +416,7 @@
   sys("INIT OK — Novagator Console " + NV_DEFAULTS.version);
   sys("Welcome! Type 'help' to see commands. Chain with ';'.");
   focusEnd(input);
+
   // Auto-run startup script if present
   try {
     const raw = localStorage.getItem("nv.startup");
@@ -418,6 +426,24 @@
       runCommand(startup);
     }
   } catch {}
+
+  // URL Command Runner: ?cmd=<url-encoded> or ?cmd64=<base64>; optional &clear=1
+  try {
+    const qp = new URLSearchParams(location.search);
+    const shouldClear = ["1","true","yes"].includes((qp.get("clear")||"").toLowerCase());
+    let cmd = qp.get("cmd");
+    if (!cmd && qp.get("cmd64")) {
+      try { cmd = atob(qp.get("cmd64")); } catch {}
+    }
+    if (cmd) {
+      if (shouldClear) { commands.clear(); }
+      sys("Running URL command…");
+      runCommand(decodeCmdParam(cmd));
+    }
+  } catch (e) {
+    err("URL cmd error: " + (e?.message || e));
+  }
+
   // Auto-show help once on load
   setTimeout(() => runCommand('help'), 0);
 })();
