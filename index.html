@@ -14,26 +14,51 @@
   @media (prefers-color-scheme: light){
     :root[data-theme="light"]{ --bg:#f7fafc; --panel:#ffffff; --text:#0b1220; --muted:#475569; --accent:#0066ff; --accent-2:#7c4dff; }
   }
+
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0; background:var(--bg); color:var(--text);
+    margin:0; background:radial-gradient(1200px 600px at 20% -10%, #12203a 0%, transparent 60%),
+               radial-gradient(800px 600px at 100% 0%, #1b2b4a 0%, transparent 55%),
+               var(--bg);
+    color:var(--text);
     font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     display:flex; align-items:stretch; justify-content:center;
   }
-  .wrap{width:min(1280px,100%); padding:16px}
+
+  /* Ambient grid / bezels */
+  .wrap{width:min(1280px,100%); padding:16px; position:relative}
+  .wrap:before{
+    content:""; position:absolute; inset:8px;
+    border-radius:18px;
+    border:1px solid color-mix(in oklab,var(--accent),#000 85%);
+    box-shadow:0 0 0 1px color-mix(in oklab,var(--panel),#fff 8%) inset, 0 20px 60px rgba(0,0,0,.35);
+    pointer-events:none;
+  }
+  .wrap:after{
+    content:""; position:absolute; inset:16px;
+    background-image:
+      linear-gradient(transparent 96%, color-mix(in oklab,var(--accent),#000 80%) 96%),
+      linear-gradient(90deg, transparent 96%, color-mix(in oklab,var(--accent),#000 80%) 96%);
+    background-size: 22px 22px, 22px 22px;
+    opacity:.12; border-radius:12px; pointer-events:none;
+  }
+
   .shell{
-    background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 90%,transparent) 0%,var(--panel) 100%);
-    border:1px solid color-mix(in oklab,var(--panel),#fff 8%);
+    background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 92%, transparent) 0%, var(--panel) 100%);
+    border:1px solid color-mix(in oklab,var(--panel),#fff 10%);
     border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.35);
-    padding:12px; display:flex; flex-direction:column; gap:12px; min-height:80vh
+    padding:12px; display:flex; flex-direction:column; gap:12px; min-height:80vh; position:relative;
+    overflow:hidden;
   }
 
   /* Toolbar */
   .toolbar{
     display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    border:1px solid color-mix(in oklab,var(--panel),#fff 10%);
-    padding:8px; border-radius:12px; background:color-mix(in oklab,var(--panel) 85%,transparent);
+    border:1px solid color-mix(in oklab,var(--panel),#fff 12%);
+    padding:8px; border-radius:12px;
+    background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 85%,transparent) 0%, color-mix(in oklab,var(--panel) 93%,transparent) 100%);
+    box-shadow:0 2px 12px rgba(0,0,0,.25) inset;
   }
   .title{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
   .dot{width:10px;height:10px;border-radius:50%}
@@ -46,6 +71,7 @@
     font:600 12px var(--mono); color:var(--text);
     background:transparent; border:1px solid color-mix(in oklab,var(--muted),#000 50%);
     padding:6px 10px; border-radius:10px; cursor:pointer;
+    transition:.15s border-color ease;
   }
   .btn:hover{border-color:color-mix(in oklab,var(--accent),#000 50%)}
   .btn.primary{border-color:color-mix(in oklab,var(--accent-2),#000 40%); color:var(--accent-2)}
@@ -57,14 +83,16 @@
 
   /* Instruments */
   .panel{
-    border:1px solid color-mix(in oklab,var(--panel),#fff 10%); border-radius:12px;
-    background:color-mix(in oklab,var(--panel) 85%,transparent); padding:10px; display:flex; flex-direction:column; gap:10px
+    border:1px solid color-mix(in oklab,var(--panel),#fff 12%); border-radius:12px;
+    background:color-mix(in oklab,var(--panel) 88%,transparent); padding:10px; display:flex; flex-direction:column; gap:10px;
+    animation: rise .5s ease-out both;
   }
   .panel h3{margin:0 0 6px 0; font-size:13px; color:var(--muted); font-weight:700; letter-spacing:.04em}
   .cards{display:grid; grid-template-columns:1fr; gap:8px}
   .card{
     border:1px solid color-mix(in oklab,var(--muted),#000 50%); border-radius:10px; padding:8px;
-    display:flex; justify-content:space-between; gap:8px; align-items:center; font:12px var(--mono)
+    display:flex; justify-content:space-between; gap:8px; align-items:center; font:12px var(--mono);
+    background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 80%,transparent), color-mix(in oklab,var(--panel) 92%,transparent));
   }
   .card .k{color:var(--muted)}
   .big{font:700 18px var(--mono)}
@@ -72,16 +100,20 @@
 
   /* Console */
   .console{
-    border:1px solid color-mix(in oklab,var(--panel),#fff 10%); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:10px; min-height:50vh
+    border:1px solid color-mix(in oklab,var(--panel),#fff 12%); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:10px; min-height:50vh;
+    background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 88%,transparent), color-mix(in oklab,var(--panel) 96%,transparent));
+    animation: rise .6s .05s ease-out both;
   }
+  @keyframes rise{from{transform:translateY(16px); opacity:0} to{transform:none; opacity:1}}
+
   .screen{flex:1; overflow:auto; padding:8px 6px; scrollbar-gutter:stable both-edges}
   .line{font-family:var(--mono); white-space:pre-wrap; word-break:break-word; line-height:1.45}
   .line.fade{color:var(--muted)}
   .line .ts{color:var(--muted); margin-right:8px}
   .line .tag{padding:1px 6px; border-radius:6px; margin-right:6px; font-weight:700}
-  .tag.OUT{background:color-mix(in oklab,var(--accent) 30%,transparent); color:var(--accent)}
-  .tag.SYS{background:color-mix(in oklab,var(--accent-2) 30%,transparent); color:var(--accent-2)}
-  .tag.ERR{background:color-mix(in oklab,var(--err) 25%,transparent); color:var(--err)}
+  .tag.OUT{background:color-mix(in oklab, var(--accent) 30%, transparent); color:var(--accent)}
+  .tag.SYS{background:color-mix(in oklab, var(--accent-2) 30%, transparent); color:var(--accent-2)}
+  .tag.ERR{background:color-mix(in oklab, var(--err) 25%, transparent); color:var(--err)}
   .prompt-row{display:flex; align-items:flex-start; gap:10px}
   .prompt{font-family:var(--mono); color:var(--muted)}
   .input{
@@ -92,8 +124,24 @@
   .footer{display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font:12px var(--mono)}
   .kbd{border:1px solid color-mix(in oklab, var(--muted), #000 40%); padding:1px 6px; border-radius:6px; margin:0 2px}
 
-  .toast{position:fixed; right:12px; bottom:12px; background:var(--panel); border:1px solid color-mix(in oklab,var(--panel),#fff 10%); color:var(--text); font:13px var(--mono); padding:8px 12px; border-radius:10px; opacity:0; transform:translateY(6px); transition:.3s}
-  .toast.show{opacity:1; transform:translateY(0)}
+  /* Ticker */
+  .ticker{
+    position:relative; height:28px; border:1px solid color-mix(in oklab,var(--accent),#000 60%);
+    border-radius:999px; overflow:hidden; background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 85%,transparent), color-mix(in oklab,var(--panel) 95%,transparent));
+    box-shadow:0 0 20px color-mix(in oklab,var(--accent),#000 85%) inset;
+  }
+  .ticker .track{
+    position:absolute; white-space:nowrap; will-change:transform; left:0; top:0; padding:5px 0;
+    animation: tick 22s linear infinite;
+    font:600 12px var(--mono); color:color-mix(in oklab,var(--accent),#fff 10%);
+  }
+  @keyframes tick{ from{ transform:translateX(100%);} to{ transform:translateX(-100%);} }
+
+  /* HUD (Notion minimal) */
+  :root.hud .panel{display:none}
+  :root.hud .toolbar .badge:not(.rec){display:none}
+  :root.hud .toolbar select, :root.hud .toolbar #btnClear{display:none}
+  :root.hud .wrap:after{opacity:.07}
 </style>
 </head>
 <body>
@@ -105,459 +153,19 @@
         <span class="dot ok" id="led"></span>
         <span>Novagator Cockpit</span>
         <span class="badge rec" id="recBadge">REC</span>
-        <span class="badge" id="ver">v1.4.0</span>
+        <span class="badge" id="ver">v1.5.0</span>
       </div>
       <span class="pill" id="statusPill">status: —</span>
       <span class="pill" id="latencyPill">latency: —</span>
       <span class="pill" id="themePill">theme: auto</span>
       <div style="flex:1"></div>
       <select id="profileSel" title="Profile">
-        <option value="dev">dev</option>
-        <option value="stage">stage</option>
-        <option value="prod">prod</option>
+        <option value="dev">dev</option><option value="stage">stage</option><option value="prod">prod</option>
       </select>
       <select id="themeSel" title="Theme">
-        <option value="auto">auto</option>
-        <option value="light">light</option>
-        <option value="dark">dark</option>
+        <option value="auto">auto</option><option value="light">light</option><option value="dark">dark</option>
       </select>
       <button class="btn" id="btnPing">Ping</button>
       <button class="btn primary" id="btnDemo">Run Demo</button>
       <button class="btn" id="btnRecord">Record</button>
-      <button class="btn" id="btnClear">Clear</button>
-    </div>
-
-    <!-- Cockpit grid -->
-    <div class="grid">
-      <!-- Instruments -->
-      <aside class="panel" id="inst">
-        <h3>Instruments</h3>
-        <div class="cards">
-          <div class="card"><span class="k">Profile</span><span id="cardProfile" class="big">dev</span></div>
-          <div class="card"><span class="k">API Base</span><span id="cardApi" style="overflow:hidden;text-overflow:ellipsis;max-width:60%"></span></div>
-          <div class="card"><span class="k">Status URL</span><span id="cardStatusUrl" style="overflow:hidden;text-overflow:ellipsis;max-width:60%"></span></div>
-          <div class="card"><span class="k">Version</span><span id="cardVersion">—</span></div>
-          <div class="card"><span class="k">Last Status</span><span id="cardStatus" class="big">—</span></div>
-          <div class="card"><span class="k">Latency</span><span id="cardLatency" class="big">—</span></div>
-        </div>
-      </aside>
-
-      <!-- Console -->
-      <main class="console" role="region" aria-label="Developer console">
-        <section id="screen" class="screen" aria-live="polite"></section>
-        <div class="prompt-row">
-          <div class="prompt" aria-hidden="true">➜</div>
-          <div id="input" class="input" contenteditable="true" spellcheck="false" role="textbox" aria-label="Console input" data-placeholder="Type a command… (try 'help')"></div>
-        </div>
-        <div class="footer">
-          <div>Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete · <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear · <span class="kbd">Shift</span>+<span class="kbd">Enter</span> newline · use <span class="kbd">;</span> to chain</div>
-          <div id="themeIndicator">theme: auto</div>
-        </div>
-      </main>
-    </div>
-  </div>
-</div>
-
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-<script>
-;(() => {
-  'use strict';
-
-  // ===== DOM
-  const $ = s => document.querySelector(s);
-  const screen = $("#screen");
-  const input = $("#input");
-  const toastEl = $("#toast");
-  const themeIndicator = $("#themeIndicator");
-  const verEl = $("#ver");
-  const led = $("#led");
-  const statusPill = $("#statusPill");
-  const latencyPill = $("#latencyPill");
-  const themePill = $("#themePill");
-  const profileSel = $("#profileSel");
-  const themeSel = $("#themeSel");
-  const btnPing = $("#btnPing");
-  const btnDemo = $("#btnDemo");
-  const btnRecord = $("#btnRecord");
-  const btnClear = $("#btnClear");
-  const cardApi = $("#cardApi");
-  const cardStatusUrl = $("#cardStatusUrl");
-  const cardVersion = $("#cardVersion");
-  const cardStatus = $("#cardStatus");
-  const cardLatency = $("#cardLatency");
-  const cardProfile = $("#cardProfile");
-
-  const ver = (verEl?.textContent || 'v0.0.0').trim();
-
-  // ===== Defaults / Profiles
-  const NV_DEFAULTS = Object.freeze({
-    version: "1.4.0",
-    apiBase: "https://api.example.dev",
-    statusUrl: "https://httpbin.org/status/200"
-  });
-
-  const DEFAULT_PROFILES = Object.freeze({
-    dev:   { env:"dev",   apiBase:"https://api.example.dev",   statusUrl:"https://httpbin.org/status/200", version:"dev" },
-    stage: { env:"stage", apiBase:"https://api.example.stage", statusUrl:"https://httpbin.org/status/200", version:"staging" },
-    prod:  { env:"prod",  apiBase:"https://api.example.com",   statusUrl:"https://httpbin.org/status/200", version:"stable" }
-  });
-
-  // ===== State
-  const state = {
-    history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
-    histIdx: null,
-    theme: localStorage.getItem("nv.theme") || "auto",
-    commands: {},
-    aliases: JSON.parse(localStorage.getItem("nv.aliases") || "{}"),
-    cfg: JSON.parse(localStorage.getItem("nv.config") || JSON.stringify(NV_DEFAULTS)),
-    profiles: JSON.parse(localStorage.getItem("nv.profiles") || JSON.stringify(DEFAULT_PROFILES)),
-    lastOut: "",
-  };
-  const saveHistory = () => localStorage.setItem("nv.history", JSON.stringify(state.history.slice(-500)));
-  const saveAliases = () => localStorage.setItem("nv.aliases", JSON.stringify(state.aliases));
-  const saveConfig  = () => localStorage.setItem("nv.config", JSON.stringify(state.cfg));
-  const saveProfiles= () => localStorage.setItem("nv.profiles", JSON.stringify(state.profiles));
-
-  // ===== Theme
-  function applyTheme(mode){
-    const root = document.documentElement;
-    if(mode === "auto"){ root.removeAttribute("data-theme"); }
-    else { root.setAttribute("data-theme", mode); }
-    state.theme = mode;
-    localStorage.setItem("nv.theme", mode);
-    themeIndicator.textContent = `theme: ${mode}`;
-    themePill.textContent = `theme: ${mode}`;
-  }
-  applyTheme(state.theme);
-  themeSel.value = state.theme;
-
-  // ===== Utils
-  const now = () => new Date().toLocaleTimeString();
-  const escapeHtml = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  const print = (msg, tag="OUT", cls="") => {
-    const el = document.createElement("div");
-    el.className = `line ${cls}`;
-    el.innerHTML = `<span class="ts">[${now()}]</span><span class="tag ${tag}">${tag}</span>${msg}`;
-    screen.appendChild(el);
-    screen.scrollTop = screen.scrollHeight;
-  };
-  const ok  = m => { state.lastOut = String(m); print(escapeHtml(m), "OUT"); };
-  const sys = m => print(escapeHtml(m), "SYS", "fade");
-  const err = m => print(escapeHtml(m), "ERR");
-  const toast = m => { toastEl.textContent = m; toastEl.classList.add("show"); setTimeout(()=>toastEl.classList.remove("show"), 2000); };
-
-  // ===== URL helpers
-  function decodeCmdParam(val){
-    if(!val) return "";
-    try { return decodeURIComponent(val.replace(/\+/g, "%20")); } catch { return val; }
-  }
-  function readCmdFromUrl(){
-    try{
-      const qs = new URLSearchParams(location.search);
-      const hs = new URLSearchParams((location.hash||"").replace(/^#/, ""));
-      const src = (k)=> qs.get(k) || hs.get(k);
-      let cmd = src("cmd") || src("q");
-      if(!cmd && (src("cmd64") || src("b64"))){ try{ cmd = atob(src("cmd64") || src("b64")); }catch{} }
-      const shouldClear = ["1","true","yes"].includes((src("clear")||"").toLowerCase());
-      const profile = src("profile");
-      const demo = src("demo");
-      return { cmd: decodeCmdParam(cmd), shouldClear, profile, demo };
-    }catch{ return { cmd:"", shouldClear:false, profile:null, demo:null }; }
-  }
-
-  // ===== Calc
-  function calcExpr(expr){
-    if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
-    const sanitized = expr.replace(/\^/g, "**").replace(/,/g,"");
-    const fn = new Function(`return (${sanitized})`);
-    const val = fn();
-    if(Number.isFinite(val)) return val;
-    throw new Error("Invalid expression");
-  }
-
-  // ===== Commands
-  const commands = {
-    help(){
-      ok(`Available commands:
-  help | clear | echo <t> | date | time | theme <auto|light|dark> | version | about | uuid
-  calc <expr> | store keys|get|set|del | ascii <text> | open <url> | net ping <url>
-  alias <name>=<command...> | alias | unalias <name>
-  nv version | nv status | config get | config set <k> <v>
-  profile list|use|save|load|del|get <name>
-  demo run|install|uninstall|show|reset
-  url run <query> | url open <query>
-`);
-      sys("Toolbar: profiles, theme, Ping, Demo, Record, Clear. Use ';' to chain commands.");
-    },
-    clear(){ screen.innerHTML = ""; },
-    echo(...a){ ok(a.join(" ")); },
-    date(){ ok(new Date().toLocaleDateString()); },
-    time(){ ok(new Date().toLocaleTimeString()); },
-    theme(arg){ const m=(arg||"").toLowerCase(); if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>"); applyTheme(m); ok(`Theme set to ${m}`); themeSel.value=m; },
-    version(){ ok(ver); },
-    about(){ ok("Novagator Developer Console — Cockpit edition."); sys("History persists. Chain with ';'."); },
-    uuid(){ const u=crypto.randomUUID(); ok(u); navigator.clipboard?.writeText(u).then(()=>toast("UUID copied")).catch(()=>{}); },
-    calc(...args){ const expr=args.join(" ").trim(); if(!expr) return err("Usage: calc <expression>"); try{ ok(String(calcExpr(expr))); }catch(e){ err("Calc error: " + e.message); } },
-    store(sub,key,...rest){
-      switch((sub||"").toLowerCase()){
-        case "keys": ok(Object.keys(localStorage).join(", ")); break;
-        case "get": if(!key) return err("Usage: store get <key>"); { const raw=localStorage.getItem(key); let val=null; try{ val=JSON.parse(raw); }catch{ val=raw; } ok(val===null?"(null)":JSON.stringify(val,null,2)); } break;
-        case "set": if(!key) return err("Usage: store set <key> <json|text>"); { let val; const raw=rest.join(" "); try{ val=JSON.parse(raw); }catch{ val=raw; } localStorage.setItem(key,JSON.stringify(val)); ok("OK"); } break;
-        case "del": if(!key) return err("Usage: store del <key>"); localStorage.removeItem(key); ok("Deleted"); break;
-        default: err("Usage: store keys|get|set|del …");
-      }
-    },
-    ascii(...text){ const s=(text.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24); const banner=s.split("").map(ch=>ch===" "?"   ":ch).join(" "); ok(`+${"-".repeat(banner.length+2)}+\n| ${banner} |\n+${"-".repeat(banner.length+2)}+`); },
-    open(url){ if(!url) return err("Usage: open <url>"); try{ window.open(url,"_blank","noopener"); ok("Opening: "+url); }catch{ err("Failed to open URL"); } },
-    async net(sub,url){ if(sub!=="ping"||!url) return err("Usage: net ping <url>"); const t0=performance.now(); try{ await fetch(url,{method:"HEAD",mode:"no-cors"}); ok(`Pinged ${url} in ~${Math.round(performance.now()-t0)}ms (HEAD, no-cors)`);}catch{ err("Network error (likely CORS)."); } },
-    alias(def){ if(!def){ const keys=Object.keys(state.aliases); return ok(keys.length?keys.map(k=>`${k} = ${state.aliases[k]}`).join("\n"):"(no aliases)"); } const m=String(def).split("="); if(m.length<2) return err("Usage: alias <name>=<command...>"); const name=m.shift().trim(); const value=m.join("=").trim(); if(!name||!value) return err("Usage: alias <name>=<command...>"); state.aliases[name]=value; saveAliases(); ok(`Alias set: ${name} = ${value}`); },
-    unalias(name){ if(!name) return err("Usage: unalias <name>"); if(!(name in state.aliases)) return err("No such alias: "+name); delete state.aliases[name]; saveAliases(); ok(`Alias removed: ${name}`); },
-
-    nv(sub){
-      switch((sub||"").toLowerCase()){
-        case "version": ok(`Novagator ${state.cfg.version || NV_DEFAULTS.version}`); break;
-        case "status": return commands["nv.status"]();
-        default: err("Usage: nv version | nv status");
-      }
-    },
-    async "nv.status"(){
-      const url = state.cfg.statusUrl || NV_DEFAULTS.statusUrl;
-      if(!url || url.includes("example.com")) return err("Set statusUrl: config set statusUrl https://your.site/health");
-      const t0 = performance.now();
-      try{
-        const res = await fetch(url, { method:"GET", mode:"cors" });
-        const ms = Math.round(performance.now()-t0);
-        ok(`Status ${res.status} ${res.ok?"OK":"NOT OK"} in ~${ms}ms`);
-        // update cockpit
-        statusPill.textContent = `status: ${res.status}`;
-        latencyPill.textContent = `latency: ${ms}ms`;
-        cardStatus.textContent = res.status + (res.ok?" OK":" FAIL");
-        cardLatency.textContent = ms+"ms";
-        led.className = "dot " + (res.ok ? "ok" : "err");
-      }catch{
-        err("Could not reach status URL (CORS or network). Try net ping " + url);
-        statusPill.textContent = "status: error";
-        led.className = "dot err";
-      }
-    },
-    config(sub, key, ...rest){
-      switch((sub||"").toLowerCase()){
-        case "get": ok(JSON.stringify(state.cfg, null, 2)); break;
-        case "set":
-          if(!key) return err("Usage: config set <key> <value>");
-          const v = rest.join(" ").trim(); if(!v) return err("Provide a value");
-          state.cfg[key] = v; saveConfig(); ok(`config[${key}] = ${v}`); updateInstruments(); break;
-        default: err("Usage: config get | config set <key> <value>");
-      }
-    },
-
-    profile(action, name){
-      const act=(action||"").toLowerCase();
-      if(!act || act==="list"){ return ok(Object.keys(state.profiles).join(", ") + "\n" + JSON.stringify(state.profiles,null,2)); }
-      if(["use","load"].includes(act)){
-        if(!name) return err("Usage: profile use <name>");
-        if(!(name in state.profiles)) return err("No such profile: " + name);
-        state.cfg = {...state.profiles[name]}; saveConfig(); ok(`Profile '${name}' applied.`); updateInstruments(); profileSel.value=name; return;
-      }
-      if(act==="save"){
-        if(!name) return err("Usage: profile save <name>");
-        state.profiles[name] = {...state.cfg}; saveProfiles(); ok(`Profile '${name}' saved.`); return;
-      }
-      if(act==="del"){
-        if(!name) return err("Usage: profile del <name>");
-        if(!(name in state.profiles)) return err("No such profile: " + name);
-        delete state.profiles[name]; saveProfiles(); ok(`Profile '${name}' deleted.`); return;
-      }
-      if(act==="get"){
-        if(!name) return err("Usage: profile get <name>");
-        if(!(name in state.profiles)) return err("No such profile: " + name);
-        ok(JSON.stringify(state.profiles[name], null, 2)); return;
-      }
-      err("Usage: profile list | use <name> | save <name> | load <name> | del <name> | get <name>");
-    },
-
-    demo(sub){
-      const action=(sub||"run").toLowerCase();
-      const needsStatus=!state.cfg.statusUrl || String(state.cfg.statusUrl).includes("example.com");
-      const script=[
-        "clear","theme dark","ascii NOVAGATOR","alias st=nv status",
-        needsStatus?"config set statusUrl https://httpbin.org/status/200":null,
-        "nv status","help"
-      ].filter(Boolean).join(" ; ");
-      if(action==="run"){ runCommand(script); ok("Demo Mode: sequence executed."); }
-      else if(action==="show"){ ok(script); }
-      else if(action==="install"){ localStorage.setItem("nv.startup", JSON.stringify(script)); ok("Demo Mode: startup script installed (runs on next load)."); }
-      else if(action==="uninstall"){ localStorage.removeItem("nv.startup"); ok("Demo Mode: startup script removed."); }
-      else if(action==="reset"){ localStorage.removeItem("nv.history"); localStorage.removeItem("nv.aliases"); localStorage.removeItem("nv.config"); ok("Demo Mode: state cleared."); runCommand(script); }
-      else { err("Usage: demo [run|install|uninstall|show|reset]"); }
-    },
-
-    url(action, ...rest){
-      const q = rest.join(" ").trim();
-      if(!action || !q) return err("Usage: url run <query> | url open <query>");
-      if(action==="run"){
-        try{
-          const qp = new URLSearchParams(q);
-          const shouldClear = ["1","true","yes"].includes((qp.get("clear")||"").toLowerCase());
-          let cmd = qp.get("cmd");
-          if(!cmd && qp.get("cmd64")){ try{ cmd = atob(qp.get("cmd64")); }catch{} }
-          if(!cmd) return err("url run: no cmd");
-          if(shouldClear) commands.clear();
-          sys("Running URL command…");
-          runCommand(decodeCmdParam(cmd));
-        }catch(e){ err("url run error: " + (e?.message || e)); }
-      } else if(action==="open"){
-        const base = location.origin + location.pathname;
-        const url = `${base}?${q}`;
-        window.open(url,"_blank","noopener");
-        ok("Opened: " + url);
-      } else err("Usage: url run <query> | url open <query>");
-    },
-
-    record(mode){
-      const root=document.documentElement;
-      const m=(mode||"").toLowerCase();
-      if(m==="on"){ root.classList.add("record"); ok("Record mode: ON"); }
-      else if(m==="off"){ root.classList.remove("record"); ok("Record mode: OFF"); }
-      else if(m==="status"){ ok(root.classList.contains("record")?"Record mode: ON":"Record mode: OFF"); }
-      else err("Usage: record on|off|status");
-    }
-  };
-  state.commands = commands;
-
-  // ===== Runner
-  function splitCommands(raw){
-    const out=[], s=raw; let cur="", q=null;
-    for(const ch of s){
-      if(ch==="'"||ch==='"'){ q=(q===ch?null:(q??ch)); cur+=ch; }
-      else if(ch===";" && !q){ out.push(cur.trim()); cur=""; }
-      else cur+=ch;
-    }
-    if(cur.trim()) out.push(cur.trim());
-    return out;
-  }
-  const expandAliases = line => {
-    const [first, ...rest] = line.trim().split(/\s+/);
-    return (first in state.aliases) ? (state.aliases[first] + (rest.length ? " " + rest.join(" ") : "")) : line;
-  };
-  function runCommand(raw){
-    if(!raw || !raw.trim()) return;
-    if(state.history[state.history.length-1] !== raw){ state.history.push(raw); saveHistory(); }
-    state.histIdx = null;
-    for(const line of splitCommands(raw).map(expandAliases)){
-      if(!line) continue;
-      print(escapeHtml("➜ " + line), "SYS", "fade");
-      const [cmd, ...args] = line.split(/\s+/);
-      const fn = state.commands[cmd?.toLowerCase()];
-      if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); continue; }
-      try{
-        const res = fn.apply(null, args);
-        if(res instanceof Promise) res.catch(e => err("Async error: " + (e?.message || e)));
-      }catch(e){ err(e?.message || String(e)); }
-    }
-  }
-
-  function complete(current){
-    const keys = Object.keys(state.commands).concat(Object.keys(state.aliases));
-    const matches = keys.filter(k => k.startsWith(current.toLowerCase()));
-    if(matches.length === 1) return matches[0] + " ";
-    if(matches.length > 1) sys("Suggestions: " + matches.join(", "));
-    return null;
-  }
-
-  // ===== Input
-  function focusEnd(el){
-    el.focus();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
-  input.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" && !e.shiftKey){
-      e.preventDefault();
-      const txt = input.textContent;
-      input.textContent = "";
-      runCommand(txt);
-    } else if(e.key === "Enter" && e.shiftKey){
-      document.execCommand?.("insertLineBreak");
-    } else if(e.key === "ArrowUp"){
-      e.preventDefault();
-      if(state.histIdx === null) state.histIdx = state.history.length;
-      if(state.histIdx > 0){ state.histIdx--; input.textContent = state.history[state.histIdx] || ""; focusEnd(input); }
-    } else if(e.key === "ArrowDown"){
-      e.preventDefault();
-      if(state.histIdx !== null){
-        state.histIdx++;
-        if(state.histIdx >= state.history.length){ state.histIdx = null; input.textContent = ""; }
-        else { input.textContent = state.history[state.histIdx] || ""; }
-        focusEnd(input);
-      }
-    } else if(e.key === "Tab"){
-      e.preventDefault();
-      const cur = input.textContent.trim();
-      if(!cur) return;
-      const comp = complete(cur);
-      if(comp){ input.textContent = comp; focusEnd(input); }
-    } else if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "l"){
-      e.preventDefault(); commands.clear(); sys("Screen cleared (Ctrl/⌘+L).");
-    }
-  });
-  document.querySelector(".console").addEventListener("mousedown", () => setTimeout(()=>focusEnd(input), 0));
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      const txt = input.textContent.trim();
-      if (txt) { input.textContent = ''; runCommand(txt); }
-    }
-  });
-
-  // ===== Instruments wiring
-  function updateInstruments(){
-    cardApi.textContent = state.cfg.apiBase || "—";
-    cardStatusUrl.textContent = state.cfg.statusUrl || "—";
-    cardVersion.textContent = state.cfg.version || NV_DEFAULTS.version;
-    cardProfile.textContent = (Object.entries(state.profiles).find(([k,v]) =>
-      v.apiBase===state.cfg.apiBase && v.statusUrl===state.cfg.statusUrl)?.[0]) || profileSel.value;
-  }
-  updateInstruments();
-
-  themeSel.addEventListener("change", () => runCommand(`theme ${themeSel.value}`));
-  profileSel.addEventListener("change", () => runCommand(`profile use ${profileSel.value}`));
-  btnPing.addEventListener("click", () => runCommand("nv status"));
-  btnDemo.addEventListener("click", () => runCommand("demo run"));
-  btnRecord.addEventListener("click", () => {
-    const on = !document.documentElement.classList.contains("record");
-    runCommand(`record ${on ? "on" : "off"}`);
-  });
-  btnClear.addEventListener("click", () => runCommand("clear"));
-
-  // ===== Boot
-  sys("INIT OK — Novagator Cockpit " + NV_DEFAULTS.version);
-  sys("Welcome! Use the toolbar or type 'help'.");
-  focusEnd(input);
-
-  try {
-    const raw = localStorage.getItem("nv.startup");
-    const startup = raw ? (JSON.parse(raw).toString ? JSON.parse(raw) : raw) : null;
-    if (startup && typeof startup === "string" && startup.trim()) {
-      sys("Running startup script…");
-      runCommand(startup);
-    }
-  } catch {}
-
-  try {
-    const { cmd, shouldClear, profile, demo } = readCmdFromUrl();
-    if (profile) runCommand(`profile use ${profile}`);
-    if (demo === "1" || demo === "true") runCommand("demo run");
-    if (cmd) { if (shouldClear) commands.clear(); sys("Running URL command…"); runCommand(cmd); }
-  } catch (e) { err("URL cmd error: " + (e?.message || e)); }
-
-  setTimeout(() => runCommand('help'), 0);
-})();
-</script>
-</body>
-</html>
+      <button class="btn" id="btnClear
