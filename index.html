@@ -5,6 +5,36 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Novagator Developer Console</title>
 <meta name="color-scheme" content="light dark"/>
+<head>
+  ...
+  <style></style>
+<style>
+  /* add-on here */
+</style>
+</head>
+
+    /* your existing CSS is already here */
+
+    /* 🔽 paste the add-on here, above the closing tag */
+    /* === NOVAGATOR STYLE PACK v1 === */
+    :root{
+      --ring: color-mix(in oklab,var(--accent),#000 75%);
+    }
+    .shell{ backdrop-filter: saturate(120%) blur(2px); }
+    .toolbar{ box-shadow: 0 2px 14px rgba(0,0,0,.35) inset, 0 0 40px rgba(0,0,0,.2); }
+    .panel, .console{ box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+    .card .k{ opacity:.75 }
+    .card .big{ text-shadow: 0 0 10px rgba(94,225,255,.35); }
+    .ticker{ box-shadow: 0 0 0 1px var(--ring) inset, 0 0 12px color-mix(in oklab,var(--accent),#000 70%) inset; }
+    .ticker .track{ text-shadow: 0 0 8px color-mix(in oklab,var(--accent),#fff 10%); letter-spacing:.02em }
+    .wrap:before{ box-shadow: 0 0 0 1px color-mix(in oklab,var(--panel),#fff 10%) inset, 0 0 80px rgba(94,225,255,.08); }
+    .gridfx .wrap:after{ opacity:.18 }
+
+    /* Optional starfield canvas (safe to leave here even if you don’t add the canvas yet) */
+    #stars{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.6; }
+    .shell > *{ position:relative; z-index:1 }
+  </style>
+</head>
 <style>
   :root{--bg:#0b0f19;--panel:#101623;--text:#e7eefb;--muted:#94a3b8;--accent:#5ee1ff;--accent-2:#7c4dff;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
   @media (prefers-color-scheme:light){:root[data-theme="light"]{--bg:#f7fafc;--panel:#fff;--text:#0b1220;--muted:#475569;--accent:#0066ff;--accent-2:#7c4dff}}
