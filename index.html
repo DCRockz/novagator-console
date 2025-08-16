@@ -2,59 +2,84 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Novagator Cockpit</title>
 <meta name="color-scheme" content="light dark"/>
 <style>
   :root{
-    --bg:#0b0f19; --panel:#101623; --text:#e7eefb; --muted:#94a3b8;
-    --accent:#5ee1ff; --accent-2:#7c4dff; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --bg:#0a0b1c; --panel:#0f1424; --panel-2:#11182a;
+    --text:#eef1ff; --muted:#8ea2c9;
+    --neon:#a855f7; --neon-2:#7c3aed; --cyan:#22d3ee;
+    --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
     --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
   }
   *{box-sizing:border-box} html,body{height:100%}
   body{
     margin:0;color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    background:radial-gradient(1400px 700px at 20% -10%,#121a30 0%,transparent 60%),
-               radial-gradient(1000px 700px at 100% 0%,#182446 0%,transparent 55%),
-               var(--bg);
+    background:
+      radial-gradient(1200px 700px at 20% -10%, #121833 0%, transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, #182045 0%, transparent 55%),
+      var(--bg);
     display:flex;justify-content:center;
   }
   .wrap{width:min(1280px,100%);padding:16px;position:relative}
   .wrap:before{
     content:"";position:absolute;inset:8px;border-radius:18px;
-    border:1px solid color-mix(in oklab,var(--accent),#000 85%);
-    box-shadow:0 0 0 1px color-mix(in oklab,var(--panel),#fff 8%) inset,0 20px 60px rgba(0,0,0,.35);
+    border:1px solid color-mix(in oklab, var(--panel), #fff 10%);
+    box-shadow:0 0 0 1px color-mix(in oklab,var(--panel),#fff 8%) inset, 0 20px 60px rgba(0,0,0,.35);
     pointer-events:none
   }
   .shell{
-    position:relative;overflow:hidden;
-    background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 92%,transparent) 0%,var(--panel) 100%);
-    border:1px solid color-mix(in oklab,var(--panel),#fff 10%);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);
+    position:relative;overflow:hidden;border-radius:18px;
+    border:1px solid color-mix(in oklab, var(--panel), #fff 10%);
+    background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 92%, transparent) 0%, var(--panel-2) 100%);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--panel), #fff 6%),
+      0 12px 40px rgba(0,0,0,.45),
+      0 0 60px color-mix(in oklab, var(--neon), #000 85%);
     padding:12px;display:flex;flex-direction:column;gap:12px;min-height:80vh
   }
-  /* starfield */
-  #stars{position:absolute;inset:0;pointer-events:none;opacity:.6}
-  .shell > *{position:relative;z-index:1}
+  /* background fx */
+  #bg-stars{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.55}
+  .horizon{
+    position:absolute; inset:auto -20% -12% -20%; height:320px; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(120% 100% at 50% 120%, color-mix(in oklab, var(--neon), #fff 40%) 0%,
+                                      color-mix(in oklab, var(--neon), transparent 90%) 62%,
+                                      transparent 63%),
+      radial-gradient(120% 100% at 50% 118%, color-mix(in oklab, var(--neon), #000 80%) 0%,
+                                      transparent 64%);
+    filter: blur(.4px);
+    mask-image: linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,.8), transparent 70%);
+    opacity:.9;
+  }
+  .shell > *{position:relative;z-index:2}
 
   /* toolbar */
   .toolbar{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    border:1px solid color-mix(in oklab,var(--panel),#fff 12%);padding:8px;border-radius:12px;
+    border:1px solid color-mix(in oklab,var(--panel),#fff 12%); padding:8px; border-radius:12px;
     background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 85%,transparent),color-mix(in oklab,var(--panel) 93%,transparent));
     box-shadow:0 2px 12px rgba(0,0,0,.25) inset
   }
   .title{display:flex;align-items:center;gap:10px;font-weight:700}
   .dot{width:10px;height:10px;border-radius:50%}
   .ok{background:var(--ok)} .warn{background:var(--warn)} .err{background:var(--err)}
-  .badge{font:600 12px var(--mono);padding:2px 8px;border-radius:999px;border:1px solid color-mix(in oklab,var(--accent),#000 60%);color:var(--accent)}
+  .badge{font:600 12px var(--mono);padding:2px 8px;border-radius:999px;border:1px solid color-mix(in oklab,var(--neon),#000 55%);color:var(--neon)}
   .rec{color:var(--err);border-color:color-mix(in oklab,var(--err),#000 50%);display:none}
   :root.record .rec{display:inline-block}
   .pill{font:600 12px var(--mono);padding:4px 8px;border-radius:999px;border:1px solid color-mix(in oklab,var(--muted),#000 50%)}
-  .btn,select{font:600 12px var(--mono);color:var(--text);background:transparent;border:1px solid color-mix(in oklab,var(--muted),#000 50%);padding:6px 10px;border-radius:10px;cursor:pointer}
-  .btn:hover{border-color:color-mix(in oklab,var(--accent),#000 50%)}
-  .btn.primary{border-color:color-mix(in oklab,var(--accent-2),#000 40%);color:var(--accent-2)}
+  .btn,select{
+    font:600 12px var(--mono);color:var(--text);background:transparent;
+    border:1px solid color-mix(in oklab,var(--muted),#000 55%); padding:6px 10px; border-radius:10px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 6px 16px rgba(0,0,0,.25);
+  }
+  .btn:hover{border-color:color-mix(in oklab,var(--neon),#000 45%)}
+  .btn.primary{border-color:color-mix(in oklab,var(--neon),#000 35%); color:var(--neon)}
+  .btn svg{width:14px;height:14px;opacity:.9}
 
-  /* grid */
+  /* grid + panels */
   .grid{display:grid;grid-template-columns:320px 1fr;gap:12px}
   @media (max-width:980px){.grid{grid-template-columns:1fr}}
   .panel{
@@ -70,71 +95,109 @@
     background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 80%,transparent),color-mix(in oklab,var(--panel) 92%,transparent))
   }
   .card .k{color:var(--muted)} .big{font:700 18px var(--mono)}
-  .console{border:1px solid color-mix(in oklab,var(--panel),#fff 12%);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:50vh;
-    background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 88%,transparent),color-mix(in oklab,var(--panel) 96%,transparent))}
+
+  /* console */
+  .console{
+    border:1px solid color-mix(in oklab,var(--panel),#fff 12%);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;min-height:50vh;
+    background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 88%,transparent),color-mix(in oklab,var(--panel) 96%,transparent));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab,var(--panel),#fff 10%), inset 0 0 40px rgba(168,85,247,.06);
+  }
   .screen{flex:1;overflow:auto;padding:8px 6px;scrollbar-gutter:stable both-edges}
   .line{font-family:var(--mono);white-space:pre-wrap;line-height:1.45}
   .fade{color:var(--muted)}
   .ts{color:var(--muted);margin-right:8px}
   .tag{padding:1px 6px;border-radius:6px;margin-right:6px;font-weight:700}
-  .OUT{background:color-mix(in oklab,var(--accent) 30%,transparent);color:var(--accent)}
-  .SYS{background:color-mix(in oklab,var(--accent-2) 30%,transparent);color:var(--accent-2)}
-  .ERR{background:color-mix(in oklab,var(--err) 25%,transparent);color:var(--err)}
+  .OUT{color:var(--cyan);background:color-mix(in oklab,var(--cyan) 28%, transparent)}
+  .SYS{color:var(--neon);background:color-mix(in oklab,var(--neon) 28%, transparent)}
+  .ERR{color:var(--err);background:color-mix(in oklab,var(--err) 22%, transparent)}
   .prompt-row{display:flex;align-items:flex-start;gap:10px}
   .prompt{font-family:var(--mono);color:var(--muted)}
-  .input{flex:1;min-height:28px;outline:0;border:0;background:transparent;color:var(--text);font-family:var(--mono);font-size:14px;caret-color:var(--accent)}
+  .input{flex:1;min-height:28px;outline:0;border:0;background:transparent;color:var(--text);font-family:var(--mono);font-size:14px;caret-color:var(--cyan)}
   .input[contenteditable="true"]:empty:before{content:attr(data-placeholder);color:var(--muted)}
   .footer{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font:12px var(--mono)}
   .kbd{border:1px solid color-mix(in oklab,var(--muted),#000 40%);padding:1px 6px;border-radius:6px;margin:0 2px}
 
+  /* ticker */
   .ticker{
-    position:relative;height:28px;border:1px solid color-mix(in oklab,var(--accent),#000 60%);border-radius:999px;overflow:hidden;
+    height:30px;border-radius:999px;border:1px solid color-mix(in oklab,var(--neon),#000 55%);
     background:linear-gradient(180deg,color-mix(in oklab,var(--panel) 85%,transparent),color-mix(in oklab,var(--panel) 95%,transparent));
-    box-shadow:0 0 20px color-mix(in oklab,var(--accent),#000 85%) inset
+    box-shadow: inset 0 0 0 1px color-mix(in oklab,var(--neon),#000 70%), inset 0 0 22px color-mix(in oklab,var(--neon),#000 80%);
+    overflow:hidden
   }
-  .track{position:absolute;white-space:nowrap;left:0;top:0;padding:5px 0;animation:tick 22s linear infinite;font:600 12px var(--mono);
-    color:color-mix(in oklab,var(--accent),#fff 10%)}
+  .track{position:relative; display:inline-block; white-space:nowrap; padding:5px 0; will-change:transform;
+    animation:tick 45s linear infinite; font:600 12px var(--mono); text-shadow:0 0 8px color-mix(in oklab,var(--neon),#fff 12%);
+    color:color-mix(in oklab,var(--neon),#fff 10%)
+  }
   @keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
 
-  /* HUD mode (for Notion) */
+  /* HUD mode for Notion */
   :root.hud .panel{display:none}
-  :root.hud .toolbar .badge:not(.rec){display:none}
   :root.hud .toolbar select, :root.hud .toolbar #btnClear{display:none}
-  :root.hud .wrap:before{opacity:.5}
+  :root.hud .badge:not(.rec){display:none}
+
+  /* activate overlay (helps when focus is captured by Notion) */
+  .activate{position:absolute;inset:0;z-index:3;display:none;align-items:center;justify-content:center;
+    background:linear-gradient(0deg,rgba(0,0,0,.35),rgba(0,0,0,.35));backdrop-filter:saturate(120%) blur(1px)}
+  .activate.show{display:flex}
+  .activate .inner{border:1px dashed color-mix(in oklab,var(--neon),#000 50%);padding:18px 22px;border-radius:12px;background:color-mix(in oklab,var(--panel),#000 10%);font:14px var(--mono);display:flex;gap:12px;align-items:center}
+  .activate button{font:600 12px var(--mono);color:var(--neon);background:transparent;border:1px solid color-mix(in oklab,var(--neon),#000 50%);padding:6px 10px;border-radius:10px;cursor:pointer}
 </style>
 </head>
 <body>
-<canvas id="stars"></canvas>
 <div class="wrap">
+  <canvas id="bg-stars" aria-hidden="true"></canvas>
+  <div class="horizon" aria-hidden="true"></div>
   <div class="shell">
     <div class="toolbar">
       <div class="title">
-        <span id="led" class="dot ok"></span>
+        <span id="led" class="dot ok" title="status"></span>
         <span>Novagator Cockpit</span>
-        <span id="ver" class="badge">v1.6.1</span>
-        <span class="badge rec" id="recBadge">REC</span>
+        <span id="ver" class="badge">v1.7.0</span>
+        <span id="recBadge" class="badge rec">REC</span>
       </div>
       <span id="statusPill" class="pill">status: —</span>
       <span id="latencyPill" class="pill">latency: —</span>
       <span id="themePill" class="pill">theme: auto</span>
       <div style="flex:1"></div>
-      <select id="profileSel"><option value="dev">dev</option><option value="stage">stage</option><option value="prod">prod</option></select>
-      <select id="themeSel"><option value="auto">auto</option><option value="light">light</option><option value="dark">dark</option></select>
-      <button id="btnPing" class="btn">Ping</button>
-      <button id="btnDemo" class="btn primary">Run Demo</button>
-      <button id="btnRecord" class="btn">Record</button>
-      <button id="btnHUD" class="btn">HUD</button>
-      <button id="btnRise" class="btn">Rise</button>
-      <button id="btnClear" class="btn">Clear</button>
+      <select id="profileSel" title="Profile">
+        <option value="dev">dev</option><option value="stage">stage</option><option value="prod">prod</option>
+      </select>
+      <select id="themeSel" title="Theme">
+        <option value="auto">auto</option><option value="light">light</option><option value="dark">dark</option>
+      </select>
+      <button id="btnPing" class="btn" title="Ping">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 12h3m12 0h3M7 12a5 5 0 0 1 10 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Ping
+      </button>
+      <button id="btnDemo" class="btn primary" title="Run Demo">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Demo
+      </button>
+      <button id="btnRecord" class="btn" title="Record">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        Record
+      </button>
+      <button id="btnHUD" class="btn" title="HUD">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M4 10h16" stroke="currentColor" stroke-width="1.6"/></svg>
+        HUD
+      </button>
+      <button id="btnRise" class="btn" title="Rise">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Rise
+      </button>
+      <button id="btnClear" class="btn" title="Clear">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5h6v2m-8 0l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        Clear
+      </button>
     </div>
 
     <div class="grid">
-      <aside class="panel">
+      <aside class="panel" id="inst">
         <h3>Instruments</h3>
         <div class="cards">
           <div class="card"><span class="k">Profile</span><span id="cardProfile" class="big">dev</span></div>
-          <div class="card"><span class="k">API Base</span><span id="cardApi">https://api.example.dev</span></div>
-          <div class="card"><span class="k">Status URL</span><span id="cardStatusUrl">https://httpbin.org/status/200</span></div>
+          <div class="card"><span class="k">API Base</span><span id="cardApi" style="overflow:hidden;text-overflow:ellipsis;max-width:60%"></span></div>
+          <div class="card"><span class="k">Status URL</span><span id="cardStatusUrl" style="overflow:hidden;text-overflow:ellipsis;max-width:60%"></span></div>
           <div class="card"><span class="k">Version</span><span id="cardVersion">—</span></div>
           <div class="card"><span class="k">Last Status</span><span id="cardStatus" class="big">—</span></div>
           <div class="card"><span class="k">Latency</span><span id="cardLatency" class="big">—</span></div>
@@ -145,139 +208,81 @@
         <section id="screen" class="screen" aria-live="polite"></section>
         <div class="prompt-row">
           <div class="prompt" aria-hidden="true">➜</div>
-          <div id="input" class="input" contenteditable="true" spellcheck="false"
-               role="textbox" aria-label="Console input"
-               data-placeholder="Type a command… (try 'help')"></div>
+          <div id="input" class="input" contenteditable="true" spellcheck="false" role="textbox" aria-label="Console input" data-placeholder="Type a command… (try 'help')"></div>
         </div>
         <div class="footer">
-          <div>
-            Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete ·
-            <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear ·
-            <span class="kbd">Shift</span>+<span class="kbd">Enter</span> newline · use <span class="kbd">;</span> to chain
-          </div>
+          <div>Tips: <span class="kbd">↑/↓</span> history · <span class="kbd">Tab</span> autocomplete · <span class="kbd">Ctrl/⌘</span>+<span class="kbd">L</span> clear · <span class="kbd">Shift</span>+<span class="kbd">Enter</span> newline</div>
           <div id="themeIndicator">theme: auto</div>
         </div>
       </main>
     </div>
 
     <div class="ticker" id="ticker" style="margin-top:8px;">
-      <div id="tickerTrack" class="track">NOVAGATOR • READY • type "help" • DEMO MODE AVAILABLE • </div>
+      <div id="tickerTrack" class="track">NOVAGATOR • READY • SHIFT+ENTER=newline • DEMO MODE • </div>
     </div>
+
+    <div id="activate" class="activate"><div class="inner"><span>Click to activate console</span><button id="btnActivate">Activate</button></div></div>
   </div>
 </div>
 
 <script>
-(() => {
-  'use strict';
+(()=>{'use strict';
+  /* starfield */
+  const sC=document.getElementById('bg-stars');const sX=sC.getContext('2d');let ST=[];
+  function sRnd(a,b){return a+Math.random()*(b-a)}
+  function sFit(){sC.width=sC.offsetWidth; sC.height=sC.offsetHeight; ST=Array.from({length:180},()=>({x:sRnd(0,sC.width),y:sRnd(0,sC.height),r:sRnd(.4,1.6),v:sRnd(.1,.5)}))}
+  function sDraw(){const w=sC.width,h=sC.height; sX.clearRect(0,0,w,h); sX.fillStyle='#fff';
+    for(const st of ST){sX.globalAlpha=.6; sX.beginPath(); sX.arc(st.x,st.y,st.r,0,6.283); sX.fill(); st.x-=st.v; if(st.x<-2) st.x=w+2;}
+    requestAnimationFrame(sDraw)}
+  new ResizeObserver(sFit).observe(document.body); sFit(); requestAnimationFrame(sDraw);
 
-  /* —— starfield —— */
-  const c = document.getElementById('stars');
-  const ctx = c.getContext('2d');
-  let stars = [];
-  function starfield(){
-    const w = c.width = c.offsetWidth = c.parentElement.offsetWidth;
-    const h = c.height = c.offsetHeight = c.parentElement.offsetHeight;
-    const N = Math.min(240, Math.floor(w*h/22000));
-    stars = Array.from({length:N}, () => ({
-      x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.2+0.2, s: Math.random()*0.6+0.2
-    }));
-    draw();
-  }
-  function draw(){
-    const {width:w,height:h} = c;
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    stars.forEach(st => {
-      ctx.globalAlpha = st.s;
-      ctx.beginPath();
-      ctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
-      ctx.fill();
-      st.x -= st.s*0.3; if(st.x < -2) st.x = w+2;
-    });
-    requestAnimationFrame(draw);
-  }
-  window.addEventListener('resize', starfield, {passive:true});
-  starfield();
+  /* shorthands */
+  const $=s=>document.querySelector(s);
+  const screen=$("#screen"), input=$("#input"), verEl=$("#ver");
+  const led=$("#led"), statusPill=$("#statusPill"), latencyPill=$("#latencyPill"), themePill=$("#themePill");
+  const cardApi=$("#cardApi"), cardStatusUrl=$("#cardStatusUrl"), cardVersion=$("#cardVersion"), cardStatus=$("#cardStatus"), cardLatency=$("#cardLatency"), cardProfile=$("#cardProfile");
+  const profileSel=$("#profileSel"), themeSel=$("#themeSel");
+  const btnPing=$("#btnPing"), btnDemo=$("#btnDemo"), btnRecord=$("#btnRecord"), btnHUD=$("#btnHUD"), btnRise=$("#btnRise"), btnClear=$("#btnClear");
+  const ticker=$("#ticker"), tickerTrack=$("#tickerTrack");
+  const activate=$("#activate"), btnActivate=$("#btnActivate");
 
-  /* —— DOM —— */
-  const $ = s => document.querySelector(s);
-  const screen = $("#screen"), input = $("#input");
-  const led = $("#led"), verEl = $("#ver");
-  const statusPill = $("#statusPill"), latencyPill = $("#latencyPill"), themePill = $("#themePill");
-  const cardApi = $("#cardApi"), cardStatusUrl = $("#cardStatusUrl"), cardVersion = $("#cardVersion");
-  const cardStatus = $("#cardStatus"), cardLatency = $("#cardLatency"), cardProfile = $("#cardProfile");
-  const profileSel = $("#profileSel"), themeSel = $("#themeSel");
-  const btnPing = $("#btnPing"), btnDemo = $("#btnDemo"), btnRecord = $("#btnRecord"),
-        btnHUD = $("#btnHUD"), btnRise = $("#btnRise"), btnClear = $("#btnClear");
-  const tickerTrack = $("#tickerTrack");
-
-  /* —— defaults / profiles —— */
-  const NV_DEFAULTS = Object.freeze({
-    version:"1.6.1",
-    apiBase:"https://api.example.dev",
-    statusUrl:"https://httpbin.org/status/200"
-  });
-  const DEFAULT_PROFILES = Object.freeze({
-    dev:{ env:"dev", apiBase:"https://api.example.dev",    statusUrl:"https://httpbin.org/status/200", version:"dev" },
-    stage:{ env:"stage", apiBase:"https://api.example.stage", statusUrl:"https://httpbin.org/status/200", version:"staging" },
-    prod:{ env:"prod", apiBase:"https://api.example.com",  statusUrl:"https://httpbin.org/status/200", version:"stable" }
+  /* defaults / profiles */
+  const NV_DEFAULTS=Object.freeze({version:"1.7.0",apiBase:"https://api.example.dev",statusUrl:"https://httpbin.org/status/200"});
+  const DEFAULT_PROFILES=Object.freeze({
+    dev:{env:"dev",apiBase:"https://api.example.dev",statusUrl:"https://httpbin.org/status/200",version:"dev"},
+    stage:{env:"stage",apiBase:"https://api.example.stage",statusUrl:"https://httpbin.org/status/200",version:"staging"},
+    prod:{env:"prod",apiBase:"https://api.example.com",statusUrl:"https://httpbin.org/status/200",version:"stable"}
   });
 
-  /* —— state —— */
-  const s = {
-    history: JSON.parse(localStorage.getItem("nv.history") || "[]"),
-    idx: null,
-    theme: localStorage.getItem("nv.theme") || "auto",
-    aliases: JSON.parse(localStorage.getItem("nv.aliases") || "{}"),
-    cfg: JSON.parse(localStorage.getItem("nv.config") || JSON.stringify(NV_DEFAULTS)),
-    profiles: JSON.parse(localStorage.getItem("nv.profiles") || JSON.stringify(DEFAULT_PROFILES)),
-    lastOut: "", tickerOn: true, tickerSpeed: 22000, mon: null
+  /* state */
+  const st={
+    history:JSON.parse(localStorage.getItem("nv.history")||"[]"),
+    idx:null,
+    theme:localStorage.getItem("nv.theme")||"auto",
+    aliases:JSON.parse(localStorage.getItem("nv.aliases")||"{}"),
+    cfg:JSON.parse(localStorage.getItem("nv.config")||JSON.stringify(NV_DEFAULTS)),
+    profiles:JSON.parse(localStorage.getItem("nv.profiles")||JSON.stringify(DEFAULT_PROFILES)),
+    lastOut:"", tickerOn:true, tickerSpeed:45000, mon:null, lockProfile:null
   };
-  const save = {
-    history: () => localStorage.setItem("nv.history", JSON.stringify(s.history.slice(-500))),
-    aliases: () => localStorage.setItem("nv.aliases", JSON.stringify(s.aliases)),
-    config: () => localStorage.setItem("nv.config", JSON.stringify(s.cfg)),
-    profiles: () => localStorage.setItem("nv.profiles", JSON.stringify(s.profiles))
-  };
+  const save={history:()=>localStorage.setItem("nv.history",JSON.stringify(st.history.slice(-500))),aliases:()=>localStorage.setItem("nv.aliases",JSON.stringify(st.aliases)),config:()=>localStorage.setItem("nv.config",JSON.stringify(st.cfg)),profiles:()=>localStorage.setItem("nv.profiles",JSON.stringify(st.profiles))};
 
-  /* —— theme —— */
-  function applyTheme(mode){
-    if(mode==="auto") document.documentElement.removeAttribute("data-theme");
-    else document.documentElement.setAttribute("data-theme", mode);
-    s.theme = mode; localStorage.setItem("nv.theme", mode);
-    themePill.textContent = `theme: ${mode}`;
-    $("#themeIndicator").textContent = `theme: ${mode}`;
-  }
-  applyTheme(s.theme); themeSel.value = s.theme;
+  /* theme */
+  function applyTheme(mode){ if(mode==="auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme",mode);
+    st.theme=mode; localStorage.setItem("nv.theme",mode); themePill.textContent=`theme: ${mode}`; $("#themeIndicator").textContent=`theme: ${mode}`;}
+  applyTheme(st.theme); themeSel.value=st.theme;
 
-  /* —— utils —— */
-  const now = () => new Date().toLocaleTimeString();
-  const esc = x => String(x).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  function print(msg, tag="OUT", cls=""){
-    const el = document.createElement("div");
-    el.className = `line ${cls}`;
-    el.innerHTML = `<span class="ts">[${now()}]</span><span class="tag ${tag}">${tag}</span>${msg}`;
-    screen.appendChild(el);
-    screen.scrollTop = screen.scrollHeight;
-  }
-  const ok = m => { s.lastOut = String(m); print(esc(m),"OUT"); };
-  const sys = m => print(esc(m),"SYS","fade");
-  const err = m => print(esc(m),"ERR");
+  /* utils */
+  const now=()=>new Date().toLocaleTimeString();
+  const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function print(msg,tag="OUT",cls=""){const el=document.createElement("div");el.className=`line ${cls}`;el.innerHTML=`<span class="ts">[${now()}]</span><span class="tag ${tag}">${tag}</span>${msg}`;screen.appendChild(el);screen.scrollTop=screen.scrollHeight}
+  const ok=m=>{st.lastOut=String(m); print(esc(m),"OUT")}, sys=m=>print(esc(m),"SYS","fade"), err=m=>print(esc(m),"ERR");
+  function setTicker(t){tickerTrack.textContent=t.endsWith(" ")?t:(t+" "); tickerTrack.style.animationDuration=st.tickerSpeed+"ms"}
+  function pushTicker(f){if(st.tickerOn) setTicker(`${tickerTrack.textContent} • ${f} `)}
+  function calcExpr(expr){ if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters"); const sanitized=expr.replace(/\^/g,"**").replace(/,/g,""); const fn=new Function(`return (${sanitized})`); const val=fn(); if(Number.isFinite(val)) return val; throw new Error("Invalid expression") }
 
-  function setTicker(text){ tickerTrack.textContent = text.endsWith(" ")?text:(text+" "); tickerTrack.style.animationDuration = s.tickerSpeed + "ms"; }
-  function pushTicker(t){ if(s.tickerOn) setTicker(`${tickerTrack.textContent} • ${t} `); }
-
-  function calcExpr(expr){
-    if(!/^[0-9+\-*/().,\s%^]*$/.test(expr)) throw new Error("Unsafe characters");
-    const sanitized = expr.replace(/\^/g,"**").replace(/,/g,"");
-    const fn = new Function(`return (${sanitized})`);
-    const val = fn(); if(Number.isFinite(val)) return val; throw new Error("Invalid expression");
-  }
-
-  /* —— commands —— */
-  const commands = {
-    help(){
-      ok(`Commands:
+  /* commands */
+  const commands={
+    help(){ ok(`Commands:
   help | clear | echo <t> | date | time | theme <auto|light|dark> | version | about | uuid
   calc <expr> | store keys|get|set|del | ascii <text> | open <url> | net ping <url>
   alias <name>=<command...> | alias | unalias <name>
@@ -287,280 +292,145 @@
   nv version | nv status | config get | config set <k> <v>
   profile list|use|save|load|del|get <name>
   demo run|install|uninstall|show|reset
-  url run <query> | url open <query>`);
-    },
-    clear(){ screen.innerHTML=""; },
-    echo(...a){ ok(a.join(" ")); },
-    date(){ ok(new Date().toLocaleDateString()); },
-    time(){ ok(new Date().toLocaleTimeString()); },
-    theme(m){ m=(m||"").toLowerCase(); if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>"); applyTheme(m); themeSel.value=m; ok(`Theme set to ${m}`); },
-    version(){ ok(verEl.textContent.trim()); },
-    about(){ ok("Novagator Cockpit — v1.6.1"); },
-    uuid(){ const u=crypto.randomUUID(); ok(u); navigator.clipboard?.writeText(u).catch(()=>{}); },
-    calc(...a){ const e=a.join(" ").trim(); if(!e) return err("Usage: calc <expr>"); try{ ok(String(calcExpr(e))); }catch(x){ err("Calc error: "+x.message);} },
-
-    store(sub,key,...rest){
-      sub=(sub||"").toLowerCase();
+  url run <query> | url open <query>`); },
+    clear(){screen.innerHTML=""}, echo(...a){ok(a.join(" "))}, date(){ok(new Date().toLocaleDateString())}, time(){ok(new Date().toLocaleTimeString())},
+    theme(m){m=(m||"").toLowerCase(); if(!["auto","light","dark"].includes(m)) return err("Usage: theme <auto|light|dark>"); applyTheme(m); themeSel.value=m; ok(`Theme set to ${m}`)},
+    version(){ok(verEl.textContent.trim())}, about(){ok("Novagator Cockpit — v1.7.0")},
+    uuid(){const u=crypto.randomUUID(); ok(u); navigator.clipboard?.writeText(u).catch(()=>{})},
+    calc(...a){const e=a.join(" ").trim(); if(!e) return err("Usage: calc <expr>"); try{ok(String(calcExpr(e)))}catch(x){err("Calc error: "+x.message)}},
+    store(sub,key,...rest){sub=(sub||"").toLowerCase();
       if(sub==="keys") return ok(Object.keys(localStorage).join(", "));
-      if(sub==="get"){ if(!key) return err("Usage: store get <key>"); const raw=localStorage.getItem(key); let v=null; try{ v=JSON.parse(raw);}catch{ v=raw } ok(v===null?"(null)":JSON.stringify(v,null,2)); return; }
-      if(sub==="set"){ if(!key) return err("Usage: store set <key> <json|text>"); let v; const raw=rest.join(" "); try{ v=JSON.parse(raw);}catch{ v=raw } localStorage.setItem(key,JSON.stringify(v)); ok("OK"); return; }
-      if(sub==="del"){ if(!key) return err("Usage: store del <key>"); localStorage.removeItem(key); ok("Deleted"); return; }
-      err("Usage: store keys|get|set|del …");
+      if(sub==="get"){if(!key) return err("Usage: store get <key>"); const raw=localStorage.getItem(key); let v=null; try{v=JSON.parse(raw)}catch{v=raw} return ok(v===null?"(null)":JSON.stringify(v,null,2))}
+      if(sub==="set"){if(!key) return err("Usage: store set <key> <json|text>"); let v; const raw=rest.join(" "); try{v=JSON.parse(raw)}catch{v=raw} localStorage.setItem(key,JSON.stringify(v)); return ok("OK")}
+      if(sub==="del"){if(!key) return err("Usage: store del <key>"); localStorage.removeItem(key); return ok("Deleted")}
+      err("Usage: store keys|get|set|del …")
+    },
+    ascii(...t){const s=(t.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24); const b=s.split("").map(ch=>ch===" "?"   ":ch).join(" "); ok(`+${"-".repeat(b.length+2)}+\n| ${b} |\n+${"-".repeat(b.length+2)}+`)},
+    open(u){if(!u) return err("Usage: open <url>"); try{window.open(u,"_blank","noopener"); ok("Opening: "+u)}catch{err("Failed to open URL")}},
+    async net(sub,u){if(sub!=="ping"||!u) return err("Usage: net ping <url>"); const t0=performance.now(); try{await fetch(u,{method:"HEAD",mode:"no-cors"}); ok(`Pinged ${u} in ~${Math.round(performance.now()-t0)}ms (HEAD,no-cors)`)}catch{err("Network error (likely CORS).")}},
+    alias(def){if(!def){const k=Object.keys(st.aliases); return ok(k.length?k.map(x=>`${x} = ${st.aliases[x]}`).join("\n"):"(no aliases)")}
+      const m=String(def).split("="); if(m.length<2) return err("Usage: alias <name>=<command...>"); const name=m.shift().trim(), val=m.join("=").trim(); if(!name||!val) return err("Usage: alias <name>=<command...>"); st.aliases[name]=val; save.aliases(); ok(`Alias set: ${name} = ${val}`)},
+    unalias(n){if(!n) return err("Usage: unalias <name>"); if(!(n in st.aliases)) return err("No such alias: "+n); delete st.aliases[n]; save.aliases(); ok(`Alias removed: ${n}`)},
+
+    nv(sub){sub=(sub||"").toLowerCase(); if(sub==="version") return ok(`Novagator ${st.cfg.version||NV_DEFAULTS.version}`); if(sub==="status") return commands["nv.status"](); err("Usage: nv version | nv status")},
+    async "nv.status"(){const url=st.cfg.statusUrl||NV_DEFAULTS.statusUrl; if(!url||url.includes("example.com")) return err("Set statusUrl: config set statusUrl https://your.site/health");
+      const t0=performance.now(); try{const res=await fetch(url,{method:"GET",mode:"cors"}); const ms=Math.round(performance.now()-t0);
+        ok(`Status ${res.status} ${res.ok?"OK":"NOT OK"} in ~${ms}ms`); statusPill.textContent=`status: ${res.status}`; latencyPill.textContent=`latency: ${ms}ms`;
+        cardStatus.textContent=res.status+(res.ok?" OK":" FAIL"); cardLatency.textContent=ms+"ms"; led.className="dot "+(res.ok?"ok":"err"); pushTicker(`STATUS ${res.status} • ${ms}ms`);
+      }catch{err("Could not reach status URL"); statusPill.textContent="status: error"; led.className="dot err"; pushTicker("STATUS error")}},
+    config(sub,k,...r){sub=(sub||"").toLowerCase();
+      if(sub==="get") return ok(JSON.stringify(st.cfg,null,2));
+      if(sub==="set"){if(!k) return err("Usage: config set <key> <value>"); const v=r.join(" ").trim(); if(!v) return err("Provide a value"); st.cfg[k]=v; save.config(); ok(`config[${k}] = ${v}`); updateInstruments(); return}
+      err("Usage: config get | config set <key> <value>")
     },
 
-    ascii(...t){ const s=(t.join(" ")||"NOVAGATOR").toUpperCase().slice(0,24); const b=s.split("").map(ch=>ch===" "?"   ":ch).join(" "); ok(`+${"-".repeat(b.length+2)}+\n| ${b} |\n+${"-".repeat(b.length+2)}+`); },
-    open(u){ if(!u) return err("Usage: open <url>"); try{ window.open(u,"_blank","noopener"); ok("Opening: "+u);}catch{ err("Failed to open URL"); } },
-
-    async net(sub,u){
-      if(sub!=="ping"||!u) return err("Usage: net ping <url>");
-      const t0=performance.now();
-      try{ await fetch(u,{method:"HEAD",mode:"no-cors"}); ok(`Pinged ${u} in ~${Math.round(performance.now()-t0)}ms (HEAD,no-cors)`); }
-      catch{ err("Network error (likely CORS)."); }
-    },
-
-    alias(def){
-      if(!def){ const k=Object.keys(s.aliases); return ok(k.length?k.map(x=>`${x} = ${s.aliases[x]}`).join("\n"):"(no aliases)"); }
-      const m=String(def).split("="); if(m.length<2) return err("Usage: alias <name>=<command...>");
-      const name=m.shift().trim(), val=m.join("=").trim(); if(!name||!val) return err("Usage: alias <name>=<command...>");
-      s.aliases[name]=val; save.aliases(); ok(`Alias set: ${name} = ${val}`);
-    },
-    unalias(n){ if(!n) return err("Usage: unalias <name>"); if(!(n in s.aliases)) return err("No such alias: "+n); delete s.aliases[n]; save.aliases(); ok(`Alias removed: ${n}`); },
-
-    nv(sub){ sub=(sub||"").toLowerCase(); if(sub==="version") return ok(`Novagator ${s.cfg.version||NV_DEFAULTS.version}`); if(sub==="status") return commands["nv.status"](); err("Usage: nv version | nv status"); },
-    async "nv.status"(){
-      const url = s.cfg.statusUrl || NV_DEFAULTS.statusUrl;
-      if(!url || url.includes("example.com")) return err("Set statusUrl: config set statusUrl https://your.site/health");
-      const t0=performance.now();
-      try{
-        const res=await fetch(url,{method:"GET",mode:"cors"});
-        const ms=Math.round(performance.now()-t0);
-        ok(`Status ${res.status} ${res.ok?"OK":"NOT OK"} in ~${ms}ms`);
-        statusPill.textContent=`status: ${res.status}`; latencyPill.textContent=`latency: ${ms}ms`;
-        cardStatus.textContent=res.status+(res.ok?" OK":" FAIL"); cardLatency.textContent=ms+"ms";
-        led.className="dot "+(res.ok?"ok":"err"); pushTicker(`STATUS ${res.status} • ${ms}ms`);
-      }catch{
-        err("Could not reach status URL"); statusPill.textContent="status: error"; led.className="dot err"; pushTicker("STATUS error");
+    profile(act,name){act=(act||"").toLowerCase();
+      if(st.lockProfile){ // hard lock — do not allow switching away once locked
+        if(act && (act!=="list" && act!=="get")) return err("Profile is locked on: "+st.lockProfile);
       }
-    },
-
-    config(sub,k,...r){
-      sub=(sub||"").toLowerCase();
-      if(sub==="get") return ok(JSON.stringify(s.cfg,null,2));
-      if(sub==="set"){ if(!k) return err("Usage: config set <key> <value>"); const v=r.join(" ").trim(); if(!v) return err("Provide a value"); s.cfg[k]=v; save.config(); ok(`config[${k}] = ${v}`); updateInstruments(); return; }
-      err("Usage: config get | config set <key> <value>");
-    },
-
-    profile(act,name){
-      act=(act||"").toLowerCase();
-      if(!act||act==="list") return ok(Object.keys(s.profiles).join(", ")+"\n"+JSON.stringify(s.profiles,null,2));
+      if(!act||act==="list") return ok(Object.keys(st.profiles).join(", ")+"\n"+JSON.stringify(st.profiles,null,2));
       if(["use","load"].includes(act)){
-        if(!name) return err("Usage: profile use <name>");
-        if(!(name in s.profiles)) return err("No such profile: "+name);
-        s.cfg={...s.profiles[name]}; save.config(); ok(`Profile '${name}' applied.`); updateInstruments(); profileSel.value=name; pushTicker(`PROFILE ${name.toUpperCase()}`);
-        return;
+        if(!name) return err("Usage: profile use <name>"); if(!(name in st.profiles)) return err("No such profile: "+name);
+        st.cfg={...st.profiles[name]}; save.config(); ok(`Profile '${name}' applied.`); updateInstruments(); if(profileSel) profileSel.value=name; pushTicker(`PROFILE ${name.toUpperCase()}`); return;
       }
-      if(act==="save"){ if(!name) return err("Usage: profile save <name>"); s.profiles[name]={...s.cfg}; save.profiles(); ok(`Profile '${name}' saved.`); return; }
-      if(act==="del"){ if(!name) return err("Usage: profile del <name>"); if(!(name in s.profiles)) return err("No such profile: "+name); delete s.profiles[name]; save.profiles(); ok(`Profile '${name}' deleted.`); return; }
-      if(act==="get"){ if(!name) return err("Usage: profile get <name>"); if(!(name in s.profiles)) return err("No such profile: "+name); ok(JSON.stringify(s.profiles[name],null,2)); return; }
-      err("Usage: profile list | use <name> | save <name> | load <name> | del <name> | get <name>");
+      if(act==="save"){if(!name) return err("Usage: profile save <name>"); st.profiles[name]={...st.cfg}; save.profiles(); ok(`Profile '${name}' saved.`); return}
+      if(act==="del"){if(!name) return err("Usage: profile del <name>"); if(!(name in st.profiles)) return err("No such profile: "+name); delete st.profiles[name]; save.profiles(); ok(`Profile '${name}' deleted.`); return}
+      if(act==="get"){if(!name) return err("Usage: profile get <name>"); if(!(name in st.profiles)) return err("No such profile: "+name); ok(JSON.stringify(st.profiles[name],null,2)); return}
+      err("Usage: profile list | use <name> | save <name> | load <name> | del <name> | get <name>")
     },
 
-    copy(what){
-      what=(what||"").toLowerCase();
-      if(what==="last"){ if(!s.lastOut) return err("Nothing to copy"); navigator.clipboard?.writeText(s.lastOut).catch(()=>{}); return ok(s.lastOut); }
-      if(what==="all"){ const t=screen?.innerText||""; navigator.clipboard?.writeText(t).catch(()=>{}); return ok("(screen copied)"); }
-      err("Usage: copy last|all");
-    },
-
-    export(){
-      const p={history:s.history,aliases:s.aliases,config:s.cfg,startup:(()=>{try{return JSON.parse(localStorage.getItem("nv.startup")||"null")}catch{return null}})(),profiles:s.profiles};
-      const t=JSON.stringify(p,null,2); ok(t); navigator.clipboard?.writeText(t).catch(()=>{});
-    },
-
-    import(...a){
-      const raw=a.join(" ");
-      try{
-        const d=JSON.parse(raw);
-        if(d.history) s.history=d.history,save.history();
-        if(d.aliases) s.aliases=d.aliases,save.aliases();
-        if(d.config)  s.cfg=d.config,save.config();
-        if(d.startup!==undefined) localStorage.setItem("nv.startup",JSON.stringify(d.startup));
-        if(d.profiles) s.profiles=d.profiles,save.profiles();
+    copy(w){w=(w||"").toLowerCase(); if(w==="last"){if(!st.lastOut) return err("Nothing to copy"); navigator.clipboard?.writeText(st.lastOut).catch(()=>{}); return ok(st.lastOut)}
+      if(w==="all"){const t=screen?.innerText||""; navigator.clipboard?.writeText(t).catch(()=>{}); return ok("(screen copied)")} err("Usage: copy last|all")},
+    export(){const p={history:st.history,aliases:st.aliases,config:st.cfg,startup:(()=>{try{return JSON.parse(localStorage.getItem("nv.startup")||"null")}catch{return null}})(),profiles:st.profiles};
+      const t=JSON.stringify(p,null,2); ok(t); navigator.clipboard?.writeText(t).catch(()=>{})},
+    import(...a){const raw=a.join(" "); try{const d=JSON.parse(raw);
+        if(d.history) st.history=d.history,save.history(); if(d.aliases) st.aliases=d.aliases,save.aliases(); if(d.config) st.cfg=d.config,save.config();
+        if(d.startup!==undefined) localStorage.setItem("nv.startup",JSON.stringify(d.startup)); if(d.profiles) st.profiles=d.profiles,save.profiles();
         ok("Import OK."); updateInstruments();
-      }catch(x){ err("Import error: "+(x?.message||x)); }
-    },
-
-    hist(sub){ sub=(sub||"print").toLowerCase(); if(sub==="clear"){ s.history=[]; save.history(); ok("History cleared."); } else ok(s.history.slice(-200).join("\n")); },
+      }catch(x){err("Import error: "+(x?.message||x))}},
+    hist(sub){sub=(sub||"print").toLowerCase(); if(sub==="clear"){st.history=[]; save.history(); ok("History cleared.")} else ok(st.history.slice(-200).join("\n"))},
 
     /* cockpit helpers */
-    rise(){ document.querySelectorAll(".panel,.console").forEach(el=>{ el.style.animation="none"; el.offsetHeight; el.style.animation="rise .6s ease-out both"; }); ok("Rise played."); },
-    record(m){ const r=document.documentElement; m=(m||"").toLowerCase();
-      if(m==="on"){ r.classList.add("record"); ok("Record ON"); }
-      else if(m==="off"){ r.classList.remove("record"); ok("Record OFF"); }
-      else if(m==="status"){ ok(r.classList.contains("record")?"Record ON":"Record OFF"); }
-      else err("Usage: record on|off|status");
-    },
-    hud(m){ const r=document.documentElement; m=(m||"").toLowerCase();
-      if(m==="on"){ r.classList.add("hud"); ok("HUD ON"); }
-      else if(m==="off"){ r.classList.remove("hud"); ok("HUD OFF"); }
-      else err("Usage: hud on|off");
-    },
-    ticker(sub,...rest){
-      sub=(sub||"").toLowerCase(); const p=rest.join(" ");
-      if(sub==="on"){ s.tickerOn=true; $("#ticker").style.display="block"; ok("Ticker ON"); }
-      else if(sub==="off"){ s.tickerOn=false; $("#ticker").style.display="none"; ok("Ticker OFF"); }
-      else if(sub==="set"){ if(!p) return err("Usage: ticker set <text>"); setTicker(p); ok("Ticker set."); }
-      else if(sub==="speed"){ const n=Number(p); if(!Number.isFinite(n)||n<2000) return err("Usage: ticker speed <ms> >=2000"); s.tickerSpeed=n; setTicker(tickerTrack.textContent.trim()); ok("Ticker speed set."); }
-      else err("Usage: ticker on|off|set <text>|speed <ms>");
-    },
-    monitor(sub,ms){
-      sub=(sub||"").toLowerCase();
-      if(sub==="on"||sub==="start"){ const t=Number(ms)||15000; if(s.mon) clearInterval(s.mon); s.mon=setInterval(()=>commands["nv.status"](),t); ok(`Monitor ON (${t}ms)`); }
-      else if(sub==="off"||sub==="stop"){ if(s.mon) clearInterval(s.mon),s.mon=null; ok("Monitor OFF."); }
-      else err("Usage: monitor on [ms] | monitor off");
-    },
+    rise(){document.querySelectorAll(".panel,.console").forEach(el=>{el.style.animation="none"; el.offsetHeight; el.style.animation="rise .6s ease-out both"}); ok("Rise played.")},
+    record(m){const r=document.documentElement; m=(m||"").toLowerCase(); if(m==="on"){r.classList.add("record"); ok("Record ON")} else if(m==="off"){r.classList.remove("record"); ok("Record OFF")} else if(m==="status"){ok(r.classList.contains("record")?"Record ON":"Record OFF")} else err("Usage: record on|off|status")},
+    hud(m){const r=document.documentElement; m=(m||"").toLowerCase(); if(m==="on"){r.classList.add("hud"); ok("HUD ON")} else if(m==="off"){r.classList.remove("hud"); ok("HUD OFF")} else err("Usage: hud on|off")},
+    ticker(sub,...rest){sub=(sub||"").toLowerCase(); const p=rest.join(" ");
+      if(sub==="on"){st.tickerOn=true; ticker.style.display="block"; ok("Ticker ON")}
+      else if(sub==="off"){st.tickerOn=false; ticker.style.display="none"; ok("Ticker OFF")}
+      else if(sub==="set"){if(!p) return err("Usage: ticker set <text>"); setTicker(p); ok("Ticker set.")}
+      else if(sub==="speed"){const n=Number(p); if(!Number.isFinite(n)||n<2000) return err("Usage: ticker speed <ms> >=2000"); st.tickerSpeed=n; setTicker(tickerTrack.textContent.trim()); ok("Ticker speed set.")}
+      else err("Usage: ticker on|off|set <text>|speed <ms>")},
+    monitor(sub,ms){sub=(sub||"").toLowerCase(); if(sub==="on"||sub==="start"){const t=Number(ms)||15000; if(st.mon) clearInterval(st.mon); st.mon=setInterval(()=>commands["nv.status"](),t); ok(`Monitor ON (${t}ms)`)}
+      else if(sub==="off"||sub==="stop"){if(st.mon) clearInterval(st.mon),st.mon=null; ok("Monitor OFF.")} else err("Usage: monitor on [ms] | monitor off")}
+    ,
 
-    /* demo & URL helpers */
-    demo(a){
-      a=(a||"run").toLowerCase();
-      const needs=!s.cfg.statusUrl || String(s.cfg.statusUrl).includes("example.com");
-      const script=[
-        "clear",
-        "theme dark",
-        "ascii NOVAGATOR",
-        "alias st=nv status",
-        needs?"config set statusUrl https://httpbin.org/status/200":null,
-        "nv status",
-        "help"
-      ].filter(Boolean).join(" ; ");
-      if(a==="run") run(script), ok("Demo executed.");
-      else if(a==="show") ok(script);
-      else if(a==="install") localStorage.setItem("nv.startup",JSON.stringify(script)), ok("Demo installed.");
-      else if(a==="uninstall") localStorage.removeItem("nv.startup"), ok("Demo removed.");
-      else if(a==="reset"){ localStorage.clear(); ok("State cleared."); run(script); }
-      else err("Usage: demo [run|install|uninstall|show|reset]");
-    },
+    /* demo + url */
+    demo(a){a=(a||"run").toLowerCase(); const needs=!st.cfg.statusUrl || String(st.cfg.statusUrl).includes("example.com");
+      const script=["clear","theme dark","ascii NOVAGATOR","alias st=nv status",needs?"config set statusUrl https://httpbin.org/status/200":null,"nv status","help"].filter(Boolean).join(" ; ");
+      if(a==="run") run(script), ok("Demo executed."); else if(a==="show") ok(script); else if(a==="install") localStorage.setItem("nv.startup",JSON.stringify(script)), ok("Demo installed.");
+      else if(a==="uninstall") localStorage.removeItem("nv.startup"), ok("Demo removed."); else if(a==="reset"){ localStorage.clear(); ok("State cleared."); run(script);} else err("Usage: demo [run|install|uninstall|show|reset]")},
 
-    url(act,...rest){
-      const q=rest.join(" ").trim();
-      if(!act||!q) return err("Usage: url run <query> | url open <query>");
-      if(act==="run"){
-        try{
-          const qp=new URLSearchParams(q);
-          const clr=["1","true","yes"].includes((qp.get("clear")||"").toLowerCase());
+    url(act,...rest){const q=rest.join(" ").trim(); if(!act||!q) return err("Usage: url run <query> | url open <query>");
+      if(act==="run"){ try{ const qp=new URLSearchParams(q); const clr=["1","true","yes"].includes((qp.get("clear")||"").toLowerCase());
           let c=qp.get("cmd"); if(!c && qp.get("cmd64")) try{ c=atob(qp.get("cmd64")) }catch{}
-          if(!c) return err("url run: no cmd");
-          if(clr) commands.clear();
-          sys("Running URL command…");
-          run(c);
-        }catch(x){ err("url run error: "+(x?.message||x)); }
-      }else if(act==="open"){
-        const base=location.origin+location.pathname; const u=`${base}?${q}`; window.open(u,"_blank","noopener"); ok("Opened: "+u);
-      }else err("Usage: url run <query> | url open <query>");
-    },
+          if(!c) return err("url run: no cmd"); if(clr) commands.clear(); sys("Running URL command…"); run(c);
+        }catch(x){err("url run error: "+(x?.message||x))} }
+      else if(act==="open"){ const base=location.origin+location.pathname; const u=`${base}?${q}`; window.open(u,"_blank","noopener"); ok("Opened: "+u) }
+      else err("Usage: url run <query> | url open <query>")}
   };
 
-  function split(raw){
-    const out=[], sraw=raw; let cur="", q=null;
-    for(const ch of sraw){
-      if(ch==="'"||ch==='"'){ q=(q===ch?null:(q??ch)); cur+=ch; }
-      else if(ch===";" && !q){ out.push(cur.trim()); cur=""; }
-      else cur+=ch;
-    }
-    if(cur.trim()) out.push(cur.trim());
-    return out;
-  }
-  function expandAliases(line){
-    const [first,...rest]=line.trim().split(/\s+/);
-    return (first in s.aliases) ? (s.aliases[first] + (rest.length ? " " + rest.join(" ") : "")) : line;
-  }
-  function run(raw){
-    if(!raw||!raw.trim()) return;
-    if(s.history[s.history.length-1]!==raw){ s.history.push(raw); save.history(); }
-    s.idx=null;
-    for(const line of split(raw).map(expandAliases)){
-      if(!line) continue;
-      print(esc("➜ "+line),"SYS","fade");
-      const [cmd,...args]=line.split(/\s+/);
-      const fn=commands[cmd?.toLowerCase()];
-      if(!fn){ err(`Unknown command: ${cmd}. Try 'help'.`); continue; }
-      try{
-        const r=fn.apply(null,args);
-        if(r instanceof Promise) r.catch(e=>err("Async error: "+(e?.message||e)));
-      }catch(e){ err(e?.message || String(e)); }
-    }
-  }
+  function split(raw){const out=[],s=raw; let cur="",q=null; for(const ch of s){ if(ch==="'"||ch==='"'){ q=(q===ch?null:(q??ch)); cur+=ch } else if(ch===";"&&!q){ out.push(cur.trim()); cur="" } else cur+=ch } if(cur.trim()) out.push(cur.trim()); return out}
+  function expandAliases(line){const [first,...rest]=line.trim().split(/\s+/); return (first in st.aliases)?(st.aliases[first]+(rest.length?" "+rest.join(" "):"")):line}
+  function run(raw){ if(!raw||!raw.trim()) return; if(st.history[st.history.length-1]!==raw){st.history.push(raw); save.history()} st.idx=null;
+    for(const line of split(raw).map(expandAliases)){ if(!line) continue; print(esc("➜ "+line),"SYS","fade");
+      const [cmd,...args]=line.split(/\s+/); const fn=commands[cmd?.toLowerCase()]; if(!fn){err(`Unknown command: ${cmd}. Try 'help'.`); continue}
+      try{ const r=fn.apply(null,args); if(r instanceof Promise) r.catch(e=>err("Async error: "+(e?.message||e))) }catch(e){err(e?.message||String(e))} } }
 
-  function updateInstruments(){
-    cardApi.textContent = s.cfg.apiBase || "—";
-    cardStatusUrl.textContent = s.cfg.statusUrl || "—";
-    cardVersion.textContent = s.cfg.version || NV_DEFAULTS.version;
-    const name = Object.entries(s.profiles).find(([k,v]) => v.apiBase===s.cfg.apiBase && v.statusUrl===s.cfg.statusUrl)?.[0] || profileSel.value || "dev";
-    cardProfile.textContent = name;
-  }
-  updateInstruments();
+  function updateInstruments(){ cardApi.textContent=st.cfg.apiBase||"—"; cardStatusUrl.textContent=st.cfg.statusUrl||"—"; cardVersion.textContent=st.cfg.version||NV_DEFAULTS.version;
+    const name=Object.entries(st.profiles).find(([k,v])=>v.apiBase===st.cfg.apiBase && v.statusUrl===st.cfg.statusUrl)?.[0] || profileSel.value || "dev";
+    cardProfile.textContent=name; }
 
-  /* —— input handlers —— */
-  function focusEnd(el){ if(!el) return; el.focus(); const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }
-  input.addEventListener("keydown", (e) => {
-    if(e.key==="Enter" && !e.shiftKey){
-      e.preventDefault(); const t=input.textContent; input.textContent=""; run(t);
-    } else if(e.key==="Enter" && e.shiftKey){
-      document.execCommand?.("insertLineBreak");
-    } else if(e.key==="ArrowUp"){
-      e.preventDefault(); if(s.idx===null) s.idx=s.history.length; if(s.idx>0){ s.idx--; input.textContent=s.history[s.idx]||""; focusEnd(input); }
-    } else if(e.key==="ArrowDown"){
-      e.preventDefault(); if(s.idx!==null){ s.idx++; if(s.idx>=s.history.length){ s.idx=null; input.textContent=""; } else { input.textContent=s.history[s.idx]||""; } focusEnd(input); }
-    } else if(e.key==="Tab"){
-      e.preventDefault(); const cur=input.textContent.trim(); if(!cur) return;
-      const keys=Object.keys(commands).concat(Object.keys(s.aliases));
-      const m=keys.filter(k=>k.startsWith(cur.toLowerCase()));
-      if(m.length===1){ input.textContent=m[0]+" "; focusEnd(input); }
-      else if(m.length>1){ sys("Suggestions: "+m.join(", ")); }
-    } else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="l"){
-      e.preventDefault(); commands.clear(); sys("Screen cleared (Ctrl/⌘+L).");
-    }
-  });
+  /* input + focus (with global Ctrl/⌘+Enter fallback) */
+  function focusEnd(el){ if(!el) return; el.focus(); const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r) }
+  input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault(); const t=input.textContent; input.textContent=""; run(t)}
+    else if(e.key==="Enter"&&e.shiftKey){ document.execCommand?.("insertLineBreak") }
+    else if(e.key==="ArrowUp"){ e.preventDefault(); if(st.idx===null) st.idx=st.history.length; if(st.idx>0){st.idx--; input.textContent=st.history[st.idx]||""; focusEnd(input)} }
+    else if(e.key==="ArrowDown"){ e.preventDefault(); if(st.idx!==null){st.idx++; if(st.idx>=st.history.length){st.idx=null; input.textContent=""} else input.textContent=st.history[st.idx]||""; focusEnd(input)} }
+    else if(e.key==="Tab"){ e.preventDefault(); const cur=input.textContent.trim(); if(!cur) return; const keys=Object.keys(commands).concat(Object.keys(st.aliases)); const m=keys.filter(k=>k.startsWith(cur.toLowerCase())); if(m.length===1){input.textContent=m[0]+" "; focusEnd(input)} else if(m.length>1){sys("Suggestions: "+m.join(", "))} }
+    else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="l"){ e.preventDefault(); commands.clear(); sys("Screen cleared (Ctrl/⌘+L).") }});
   document.querySelector(".console").addEventListener("mousedown",()=>setTimeout(()=>focusEnd(input),0));
-  document.addEventListener("keydown",(e)=>{ if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); const t=input?.textContent.trim(); if(t){ input.textContent=""; run(t); } } });
+  document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); const t=input?.textContent.trim(); if(t){input.textContent=""; run(t)} } });
 
-  /* —— wire toolbar —— */
+  /* wire toolbar */
   themeSel.addEventListener("change",()=>run(`theme ${themeSel.value}`));
-  profileSel.addEventListener("change",()=>run(`profile use ${profileSel.value}`));
+  profileSel.addEventListener("change",()=>{ if(st.lockProfile){ profileSel.value=st.lockProfile; return err("Profile is locked.") } run(`profile use ${profileSel.value}`) });
   btnPing.addEventListener("click",()=>run("nv status"));
   btnDemo.addEventListener("click",()=>run("demo run"));
-  btnRecord.addEventListener("click",()=>{ const on=!document.documentElement.classList.contains("record"); run(`record ${on?"on":"off"}`); });
-  btnHUD.addEventListener("click",()=>{ const on=!document.documentElement.classList.contains("hud"); run(`hud ${on?"on":"off"}`); });
+  btnRecord.addEventListener("click",()=>{ const on=!document.documentElement.classList.contains("record"); run(`record ${on?"on":"off"}`) });
+  btnHUD.addEventListener("click",()=>{ const on=!document.documentElement.classList.contains("hud"); run(`hud ${on?"on":"off"}`) });
   btnRise.addEventListener("click",()=>run("rise"));
   btnClear.addEventListener("click",()=>run("clear"));
+  btnActivate.addEventListener("click",()=>{ activate.classList.remove("show"); focusEnd(input); run("help") });
 
-  /* —— boot —— */
-  sys("INIT OK — Novagator Cockpit "+NV_DEFAULTS.version);
-  sys("Welcome! Use the toolbar or type 'help'.");
-  setTicker("NOVAGATOR • READY • SHIFT+ENTER = newline • DEMO MODE AVAILABLE • ");
+  /* boot */
+  function readParams(){ try{
+    const qs=new URLSearchParams(location.search), hs=new URLSearchParams((location.hash||"").replace(/^#/,"")); const src=k=>qs.get(k)||hs.get(k);
+    return { notion:src("notion"), profile:src("profile"), demo:src("demo"), cmd:src("cmd")||src("q")||null, b64:src("cmd64")||src("b64")||null, clear:src("clear"), lock:src("lock") }
+  }catch{return{} } }
+  const p=readParams();
+  try{ if(p.lock){ st.lockProfile=(p.profile||"").toLowerCase()||"prod"; profileSel.disabled=true; }
+    if(p.notion==="1"||p.notion==="true"){ run("hud on"); st.tickerSpeed=45000; setTicker(tickerTrack.textContent.trim()) }
+    if(p.profile) run(`profile use ${p.profile}`);
+    if(p.demo==="1"||p.demo==="true") run("demo run");
+    let cmd=p.cmd; if(!cmd && p.b64) try{cmd=atob(p.b64)}catch{}
+    const shouldClear = ["1","true","yes"].includes(String(p.clear||"").toLowerCase());
+    if(cmd){ if(shouldClear) commands.clear(); sys("Running URL command…"); run(cmd) }
+  }catch(e){ err("URL init error: "+(e?.message||e)) }
 
-  // run startup script if installed
-  try{
-    const raw = localStorage.getItem("nv.startup");
-    const startup = raw ? (JSON.parse(raw).toString ? JSON.parse(raw) : raw) : null;
-    if(startup && startup.trim()){ sys("Running startup script…"); run(startup); }
-  }catch{}
-
-  // URL params
-  try{
-    const qs=new URLSearchParams(location.search), hs=new URLSearchParams((location.hash||"").replace(/^#/,""));
-    const src = k => qs.get(k) || hs.get(k);
-    const notion = src("notion"); if(notion==="1"||notion==="true") run("hud on");
-    const profile = src("profile"); if(profile) run(`profile use ${profile}`);
-    const demo = src("demo"); if(demo==="1"||demo==="true") run("demo run");
-    let cmd = src("cmd") || src("q"); if(!cmd && (src("cmd64")||src("b64"))) try{ cmd = atob(src("cmd64")||src("b64")); }catch{}
-    const shouldClear = ["1","true","yes"].includes((src("clear")||"").toLowerCase());
-    if(cmd){ if(shouldClear) commands.clear(); sys("Running URL command…"); run(cmd); }
-  }catch(e){ err("URL init error: "+(e?.message||e)); }
-
-  // set defaults on load (nice feel for Notion)
-  run("ticker speed 45000");
-})();
-</script>
+  updateInstruments(); applyTheme(st.theme); setTicker(tickerTrack.textContent.trim());
+  sys("INIT OK — Novagator "+(NV_DEFAULTS.version)); sys("Use the toolbar or type 'help'.");
+  // ensure focus
+  setTimeout(()=>{ if((screen?.children.length||0)<2) activate.classList.add("show") }, 300);
+})();</script>
 </body>
 </html>
