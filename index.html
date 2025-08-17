@@ -1,96 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Novagator — Cockpit (Safe Mode)</title>
-<style>
-  :root{--bg:#0B1220;--panel:#101827;--fg:#fff;--muted:#9ca3af}
-  html,body{margin:0;background:#000}
-  body{font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--fg);background:var(--bg)}
-  .wrap{padding:16px;max-width:1100px;margin:0 auto}
-  .h1{font-weight:800;font-size:22px;margin:4px 0 12px}
-  .cards{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
-  .card{background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;min-width:150px}
-  .label{font-size:12px;color:var(--muted);letter-spacing:.02em}
-  .value{font-weight:800;font-size:20px;margin-top:2px}
-  .ticker{margin:14px 0;padding:10px;border-radius:12px;background:#0B1220;border:1px solid rgba(255,255,255,.12)}
-  .tline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .note{color:var(--muted);font-size:12px;margin-top:6px}
-  pre#debug{background:#0a0f1a;color:#ffd54f;border:1px solid rgba(255,255,255,.1);padding:8px;border-radius:8px;margin-top:12px;white-space:pre-wrap}
-</style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="h1">Novagator — Cockpit <span id="env" style="opacity:.7"></span></div>
-
-    <div class="cards">
-      <div class="card"><div class="label">Revenue £</div><div class="value" id="rev">—</div></div>
-      <div class="card"><div class="label">7-Day Avg £</div><div class="value" id="avg">—</div></div>
-      <div class="card"><div class="label">Status</div><div class="value" id="status">—</div></div>
-    </div>
-
-    <div class="ticker"><div class="tline" id="t1">Loading…</div></div>
-    <div class="note" id="note"></div>
-
-    <pre id="debug" style="display:none"></pre>
-  </div>
-
+<!doctype html><meta charset="utf-8">
+<title>Pages Sanity Test</title>
+<style>html,body{margin:0;height:100%;background:#111;color:#0f0;font:20px/1.4 system-ui;display:grid;place-items:center}</style>
+<main>
+  <h1>✅ GitHub Pages is serving index.html</h1>
+  <p>Env: <code>?env=stage</code> → <span id="env">stage</span></p>
+  <p>Time: <span id="t"></span></p>
+</main>
 <script>
-  // Show JS errors right on the page instead of a blank screen
-  const dbg = document.getElementById('debug');
-  window.addEventListener('error', e => {
-    dbg.style.display = 'block';
-    dbg.textContent = 'JS Error: ' + e.message;
-  });
-
-  (function(){
-    const params = new URLSearchParams(location.search);
-    document.getElementById('env').textContent = '(' + (params.get('env') || 'prod') + ')';
-
-    // Your published CSVs — change later if needed
-    const SNAPSHOT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTpSc6IVhZlP1U_4T6QvquApQ5_qOXzNCDZxFN5JQBx16V4kZqCmbMY0RvCwGYIsaPSAQwAdqYZlfFY/pub?gid=930492670&single=true&output=csv";
-
-    const revEl = document.getElementById('rev');
-    const avgEl = document.getElementById('avg');
-    const statusEl = document.getElementById('status');
-    const t1 = document.getElementById('t1');
-    const note = document.getElementById('note');
-
-    function num(s){ return s ? parseFloat(String(s).replace(/[^0-9.\-]+/g,'')) : NaN; }
-
-    function extract(line){
-      return {
-        revenue: num((line.match(/Revenue[^0-9]*([\d.,]+)/i)||[])[1]),
-        avg:     num((line.match(/7[- ]?Day[^0-9]*([\d.,]+)/i)||[])[1]),
-        status:  (line.match(/Status:\s*([A-Za-z ]+)/i)||[])[1] || '—'
-      };
-    }
-
-    async function load(){
-      try{
-        const res = await fetch(SNAPSHOT_CSV, { cache: 'no-store' });
-        const text = await res.text();
-        let line = (text.trim().split(/\r?\n/)[0] || '').replace(/^"|"$/g,'');
-        if (!line) throw new Error('Empty CSV first row');
-
-        t1.textContent = line;
-        const {revenue, avg, status} = extract(line);
-        revEl.textContent = isNaN(revenue) ? '—' : revenue.toLocaleString();
-        avgEl.textContent = isNaN(avg) ? '—' : avg.toLocaleString();
-        statusEl.textContent = status;
-        note.textContent = '';
-      }catch(err){
-        // Fallback demo data so page never looks blank
-        t1.textContent = "Today: 14 Aug 2025 • TikTok: 1450 • Instagram: 940 • YouTube: 920 • Total Views: 3310 • Revenue £: 300 • 7-Day Avg £: 280 • Status: Green";
-        revEl.textContent = '300';
-        avgEl.textContent = '280';
-        statusEl.textContent = 'Green';
-        note.textContent = 'Offline/demo mode: ' + (err && err.message ? err.message : err);
-      }
-    }
-    load();
-  })();
+  document.getElementById('t').textContent = new Date().toLocaleString();
+  const u=new URLSearchParams(location.search); document.getElementById('env').textContent = u.get('env')||'prod';
 </script>
-</body>
-</html>
